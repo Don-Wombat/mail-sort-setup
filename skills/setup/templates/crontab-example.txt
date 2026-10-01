@@ -1,5 +1,7 @@
 # In "crontab -e" einfuegen (absoluten Pfad zum Projektordner anpassen,
 # den mail-sort-setup angelegt hat). Beispiel: alle 4 Stunden.
+# Das Loop-Skript schreibt selbst nach mail-sort.log -- deshalb hier keine
+# zweite Umleitung in eine Datei (sonst doppeltes Logging).
 #
 # Minute Stunde Tag Monat Wochentag  Befehl
-0 */4 * * * cd /pfad/zum/mail-sort-projekt && bash mail-sort-loop.sh --once >> mail-sort-cron.log 2>&1
+0 */4 * * * cd /pfad/zum/mail-sort-projekt || exit 1; bash mail-sort-loop.sh --once >/dev/null 2>&1

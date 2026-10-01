@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "mail": {
+      "command": "uvx",
+      "args": ["mcp-email-server==__MCP_EMAIL_SERVER_VERSION__", "stdio"]
+    }
+  }
+}

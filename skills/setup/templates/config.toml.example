@@ -3,10 +3,12 @@
 #
 # WICHTIG (siehe SKILL.md Abschnitt 0): Kein [emails.outgoing]-Block ->
 # der MCP-Server kann dieses Konto strukturell nicht zum Senden nutzen,
-# unabhaengig davon, was clientseitig erlaubt wird. Nur ergaenzen, wenn
-# der Nutzer das im Interview ausdruecklich verlangt hat -- dann zusaetzlich
-# eine Zeile "allowed_recipients = []" darunter, um Senden trotzdem zu
-# blockieren (kann spaeter bewusst vom Nutzer geoeffnet werden).
+# unabhaengig davon, was clientseitig erlaubt wird.
+#
+# allowed_recipients ist ein GLOBALER Schluessel (ganz oben, VOR dem ersten
+# [[emails]]-Block). Die leere Liste sperrt das Senden zusaetzlich auf
+# Serverseite. Nicht entfernen.
+allowed_recipients = []
 
 [[emails]]
 account_name = "beispielkonto"        # frei waehlbar, erscheint in list_available_accounts
@@ -16,19 +18,19 @@ email_address = "beispiel@anbieter.tld"
 
 [emails.incoming]
 user_name = "beispiel@anbieter.tld"
-password = "APP-PASSWORT-HIER"         # ggf. App-Passwort statt normalem Passwort, siehe SKILL.md 1.1
+password = "HIER-APP-PASSWORT-EINTRAGEN"  # NICHT im Chat nennen: der Nutzer traegt es selbst in seinem Terminal ein (SKILL.md Phase 2)
 host = "imap.anbieter.tld"
 port = 993
 use_ssl = true
 start_ssl = false
 verify_ssl = true
 
-# Optional: nur ergaenzen, wenn im Interview (Phase 1.2) ein Tag fuer
+# Optional: nur einkommentieren, wenn im Interview (Phase 1.2) ein Tag fuer
 # zeitkritische/handlungsbeduerftige Mails gewuenscht wurde. "keyword"
-# muss ein vom IMAP-Server unterstuetztes Custom-Flag/Label sein -- bei
-# Unsicherheit zunaechst weglassen und spaeter nachruesten.
-[[emails.tags]]
-name = "handlungsbedarf"
-keyword = "$label5"
-description = "Zeitkritisch: Frist, Mahnung, faellig, kuendbar"
-writable = true
+# muss ein vom IMAP-Server unterstuetztes Custom-Flag/Label sein -- in
+# Phase 6 wird geprueft, ob das Setzen und Zuruecklesen wirklich klappt.
+# [[emails.tags]]
+# name = "handlungsbedarf"
+# keyword = "$label5"
+# description = "Zeitkritisch: Frist, Mahnung, faellig, kuendbar"
+# writable = true

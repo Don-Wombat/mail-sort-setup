@@ -2,10 +2,14 @@
 Description=Zeitplan fuer den Mail-Sort-Lauf (siehe mail-sort.service)
 
 [Timer]
-# Beispiel: erster Lauf 07:00, danach alle 4h -- an Phase-5-Antwort anpassen.
-# OnCalendar akzeptiert auch simplere Formen wie "*-*-* 07:00:00" fuer
-# genau einmal taeglich, oder "*:0/240" fuer alle 4h ab jeder vollen Stunde.
-OnCalendar=*-*-* 07,11,15,19,23,03:00:00
+# Beispiel: alle 4h (03, 07, 11, 15, 19, 23 Uhr) -- an die Phase-5-Antwort anpassen.
+# Gueltige Alternativen:
+#   OnCalendar=*-*-* 07:00:00        einmal taeglich um 07:00
+#   OnCalendar=*-*-* 00/4:00:00      alle 4h ab 00:00 (00, 04, 08, ...)
+#   OnCalendar=hourly                jede volle Stunde
+# NICHT gueltig ist die Cron-Schreibweise "*:0/240". Vor dem Aktivieren
+# pruefen mit: systemd-analyze calendar --iterations=3 "<Ausdruck>"
+OnCalendar=*-*-* 03/4:00:00
 Persistent=true
 
 [Install]

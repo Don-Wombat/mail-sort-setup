@@ -6,3 +6,5 @@ Type=oneshot
 # Absoluten Pfad zum Projektordner eintragen, den mail-sort-setup angelegt hat:
 WorkingDirectory=%h/pfad/zum/mail-sort-projekt
 ExecStart=/usr/bin/env bash mail-sort-loop.sh --once
+# Etwas mehr als MAIL_SORT_RUN_TIMEOUT_SECONDS (30 min) im Loop-Skript:
+TimeoutStartSec=35min
