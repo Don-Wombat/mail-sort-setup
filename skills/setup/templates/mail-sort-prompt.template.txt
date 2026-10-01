@@ -39,6 +39,12 @@ Gib am Ende eine kurze Zusammenfassung aus:
   dem ersten Lauf (siehe SKILL.md Phase 6b) — bitte immer ausgeben, auch
   wenn die Liste kurz ist.
 
+Schreibe als allerletzte Zeile deiner Ausgabe, allein in einer Zeile und
+ohne weiteren Text, exakt: MAIL_SORT_LAUF_OK
+(Nur wenn der Lauf vollständig durchgelaufen ist. Bei einem Abbruch oder
+Fehler diese Zeile NICHT ausgeben — das Loop-Skript merkt sich sonst den
+Lauf als erledigt.)
+
 # --- Hinweise für Claude beim Ausfüllen dieser Vorlage (diesen Kommentarblock vor dem Speichern entfernen) ---
 # __ACCOUNT_NAME__   : account_name des Kontos aus config.toml (exakt wie in list_available_accounts)
 # __TON__            : "vorsichtig, nichts darf verloren wirken" ODER "aggressiv, Risiko gering" (aus Interview 1.1)

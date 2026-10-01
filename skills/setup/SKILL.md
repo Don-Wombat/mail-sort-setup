@@ -86,9 +86,7 @@ uname -s   # Linux / Darwin (macOS) / ...
 - **Docker-Pfad**, wenn `/.dockerenv` existiert (oder der Nutzer bestätigt,
   dass Claude Code in einem Container läuft, der Sessions bei Absturz neu
   startet — frag nach, ob es sowas wie ein `entrypoint.sh` mit
-  Neustart-Schleife gibt, analog zu diesem hiesigen Referenz-Setup unter
-  `~/projects/obsidian/Claude-Code-Stack/Übersicht (compose, Dockerfile, entrypoint).md`,
-  falls das Vault in dieser Umgebung existiert und lesbar ist).
+  Neustart-Schleife gibt, das pro Projekt ein eigenes `tmux`-Fenster startet).
 - **Lokaler Pfad**, wenn keine Container-Umgebung erkennbar ist — dann
   zählt das Betriebssystem für die Zeitplan-Mechanik (Phase 5).
 
@@ -195,13 +193,24 @@ mail-mcp-sort:
     - MCP_PORT=8000
     - MCP_ALLOWED_HOSTS=mail-mcp-sort:8000,localhost:8000
     - MCP_ALLOWED_ORIGINS=http://mail-mcp-sort:8000
+    - MCP_EMAIL_SERVER_CONFIG_PATH=/config/config.toml
   volumes:
     - <config-verzeichnis-des-nutzers>:/config
   networks: [<gleiches-netz-wie-claude-code>]
 ```
 
+`MCP_EMAIL_SERVER_CONFIG_PATH` ist nötig: ohne diese Variable liest der
+Server `~/.config/mcp-email-server/config.toml` im Container und findet die
+gemountete Datei nicht. Das Config-Verzeichnis muss für den Container
+schreibbar sein (der Server legt dort Hilfsdateien neben der `config.toml`
+an). Aus Reproduzierbarkeitsgründen kann das Image statt `latest` auf eine
+konkrete Version gepinnt werden.
+
 Kein published Port nötig, wenn Claude Code im selben Docker-Netz hängt —
-dann intern über den Containernamen erreichbar. Danach registrieren:
+dann intern über den Containernamen erreichbar. Danach registrieren
+(`-s local` gilt nur für das aktuelle Projektverzeichnis: den Befehl **im
+Projektverzeichnis aus Phase 4** ausführen, das dafür vorher angelegt
+werden muss):
 
 ```bash
 claude mcp add --transport http mail http://mail-mcp-sort:8000/mcp -s local
@@ -222,8 +231,10 @@ claude mcp add mail -s local -- uvx mcp-email-server@latest stdio
 
 `uvx` braucht [uv](https://docs.astral.sh/uv/) — falls nicht installiert,
 kurz erklären/installieren lassen. Die Config-Datei liegt dann lokal unter
-`~/.config/zerolib/mcp_email_server/config.toml` (Pfad vom Server selbst
-vorgegeben).
+`~/.config/mcp-email-server/config.toml` (ältere Versionen nutzten
+`~/.config/zerolib/mcp_email_server/config.toml`; der Server kopiert die
+alte Datei beim ersten Start selbst). Auch hier den `claude mcp add`-Befehl
+im Projektverzeichnis aus Phase 4 ausführen.
 
 ### Verifizieren
 
@@ -280,9 +291,8 @@ jeweiligen Claude-Code-Installation anlegen mit:
 
 Falls Docker-Pfad mit vorhandenem `entrypoint.sh`: dem Nutzer den
 konkreten Codeblock zeigen, den er dort ergänzen muss (Muster: eigenes
-`tmux`-Fenster, das den Loop startet, analog zu
-`~/projects/obsidian/Claude-Code-Stack/Übersicht (compose, Dockerfile, entrypoint).md`
-Punkt 4/5, falls einsehbar). Falls kein `entrypoint.sh` vorhanden: minimal
+`tmux`-Fenster, das den Loop startet, analog zu den vorhandenen
+Projekt-Fenstern in diesem `entrypoint.sh`). Falls kein `entrypoint.sh` vorhanden: minimal
 anleiten, wie man den Loop in einer eigenen `tmux`-Session dauerhaft
 laufen lässt (`tmux new-session -d -s mail-sort 'bash mail-sort-loop.sh'`).
 
@@ -304,7 +314,9 @@ Je nach Umgebung (Phase 0) unterschiedlich umgesetzt:
 - **Lokaler Pfad, Linux mit systemd:** `templates/systemd/mail-sort.service`
   + `templates/systemd/mail-sort.timer` verwenden (Intervall im Timer,
   `OnCalendar=`), unter `~/.config/systemd/user/` ablegen, dann
-  `systemctl --user enable --now mail-sort.timer`.
+  `systemctl --user enable --now mail-sort.timer`. User-Timer laufen nur,
+  solange der Nutzer eingeloggt ist — soll der Lauf auch ohne Login
+  laufen (Server, Abwesenheit): `loginctl enable-linger "$USER"`.
 - **Lokaler Pfad, klassisches Cron (Linux/macOS):** Zeile aus
   `templates/crontab-example.txt` anpassen, `crontab -e`.
 - **Lokaler Pfad, macOS ohne Cron-Präferenz:** `launchd` ist möglich, aber
@@ -325,9 +337,13 @@ Aktivieren des automatischen Zeitplans:
 1. `bash mail-sort-loop.sh --once` gemeinsam mit dem Nutzer ausführen.
 2. Ergebnis zusammen durchgehen: wie viele Mails erkannt, wie viele
    verschoben/markiert, wie viele blieben unangetastet.
-3. Explizit im Log zeigen, dass **keine** send/delete/forward-Aufrufe
-   stattfanden (es sollten schlicht keine solchen Tool-Aufrufe im Log
-   auftauchen, weil `--allowedTools` sie verhindert hat).
+3. Dem Nutzer erklären, dass send/delete/forward-Aufrufe durch
+   `--allowedTools` bzw. `--disallowedTools` technisch gesperrt sind. Das
+   Log (`mail-sort.log`) enthält nur die Textausgabe des Laufs, keine
+   Liste der Tool-Aufrufe — den Nachweis liefert also die Sperre selbst,
+   nicht das Log. Meldet das Log am Ende die Abschlussmarke
+   `MAIL_SORT_LAUF_OK`, ist der Lauf vollständig durchgelaufen; fehlt sie,
+   wurde der Watermark bewusst nicht fortgeschrieben.
 4. Weiter mit Phase 6b — **nicht direkt aktivieren.**
 
 ---
@@ -365,8 +381,7 @@ Automatisierung auffallen.
 
 Bei gemeldeten Fehlern: Regel in `mail-sort-prompt.txt` entsprechend enger
 fassen (z. B. Ausnahme für einen Betreff-Fall ergänzen, wie im
-Referenz-Setup üblich — siehe [[Mail-Sortierung]] im Obsidian-Vault, falls
-vorhanden, für Beispiele solcher Ausnahmeregeln), betroffene Mails auf
+Referenz-Setup üblich), betroffene Mails auf
 Wunsch des Nutzers per `move_emails` zurück ins Postfach/in den korrekten
 Ordner verschieben, und **Schritt 1 dieser Phase mit den korrigierten
 Regeln wiederholen** (erneuter `--once`-Lauf), bis der Nutzer zufrieden
