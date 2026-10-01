@@ -1,0 +1,5 @@
+# In "crontab -e" einfuegen (absoluten Pfad zum Projektordner anpassen,
+# den mail-sort-setup angelegt hat). Beispiel: alle 4 Stunden.
+#
+# Minute Stunde Tag Monat Wochentag  Befehl
+0 */4 * * * cd /pfad/zum/mail-sort-projekt && bash mail-sort-loop.sh --once >> mail-sort-cron.log 2>&1

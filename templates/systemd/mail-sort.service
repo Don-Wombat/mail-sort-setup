@@ -1,0 +1,8 @@
+[Unit]
+Description=Mail-Sort: ein automatischer Sortierlauf (read-only)
+
+[Service]
+Type=oneshot
+# Absoluten Pfad zum Projektordner eintragen, den mail-sort-setup angelegt hat:
+WorkingDirectory=%h/pfad/zum/mail-sort-projekt
+ExecStart=/usr/bin/env bash mail-sort-loop.sh --once

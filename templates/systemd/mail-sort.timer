@@ -1,0 +1,12 @@
+[Unit]
+Description=Zeitplan fuer den Mail-Sort-Lauf (siehe mail-sort.service)
+
+[Timer]
+# Beispiel: erster Lauf 07:00, danach alle 4h -- an Phase-5-Antwort anpassen.
+# OnCalendar akzeptiert auch simplere Formen wie "*-*-* 07:00:00" fuer
+# genau einmal taeglich, oder "*:0/240" fuer alle 4h ab jeder vollen Stunde.
+OnCalendar=*-*-* 07,11,15,19,23,03:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

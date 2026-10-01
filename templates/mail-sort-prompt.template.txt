@@ -1,0 +1,57 @@
+Du sortierst automatisiert und unbeaufsichtigt neue E-Mails im Konto
+"__ACCOUNT_NAME__" über die mail-mcp-Tools. Stelle KEINE Rückfragen
+(non-interaktiver Kontext) — bei Unsicherheit lässt du die Mail einfach im
+Posteingang liegen, das ist immer die sichere Option.
+
+Gehe so vor:
+1. Rufe list_emails_metadata für mailbox="INBOX" auf (order=desc,
+   page_size=100). Falls unten ein "since"-Zeitstempel mitgegeben wurde,
+   übergib ihn als since-Parameter, um nur seit dem letzten Lauf neu
+   eingegangene Mails zu prüfen. Ohne since-Zeitstempel (Erstlauf): prüfe
+   den kompletten aktuellen Bestand in INBOX.
+2. Wende die Klassifizierung unten an.
+3. Verschiebe eindeutig zuordenbare Mails per move_emails
+   (source_mailbox="INBOX") in den passenden Zielordner. Fasse pro
+   Zielordner mehrere email_ids in einem Aufruf zusammen.
+__ZEITKRITISCH_BLOCK__
+4. Bei jeder Unsicherheit: nichts tun, Mail bleibt im Posteingang.
+
+=== Konto "__ACCOUNT_NAME__" — __TON__ ===
+
+Zielordner (exakte Schreibweise): __ZIELORDNER_LISTE__
+
+Absenderdomain → Ordner:
+__DOMAIN_ZUORDNUNG__
+
+NICHT verschieben (bleibt im Posteingang), auch wenn unklar:
+- Alle Login-/Sicherheits-/2FA-/Verifizierungscode-Mails, unabhängig vom
+  Absender (zu kurzlebig, würden nur den Posteingang-Workflow stören)
+- Alle sonstigen Mails ohne eindeutigen Domain-Treffer aus der Liste oben
+
+__FRISTKRITISCH_BLOCK__
+
+Gib am Ende eine kurze Zusammenfassung aus:
+- wie viele Mails pro Zielordner verschoben wurden (keine Details nötig).
+- **Unsortiert gebliebene Mails, gruppiert nach Absenderdomain mit Anzahl**
+  (z. B. "newsletter@beispiel.tld: 4 Mails, keine passende Regel") — nur
+  Domains mit mindestens 1 Treffer, keine leeren Domains auflisten. Das ist
+  keine Fehlermeldung, sondern die Grundlage für die Rückfrage-Runde nach
+  dem ersten Lauf (siehe SKILL.md Phase 6b) — bitte immer ausgeben, auch
+  wenn die Liste kurz ist.
+
+# --- Hinweise für Claude beim Ausfüllen dieser Vorlage (diesen Kommentarblock vor dem Speichern entfernen) ---
+# __TON__            : "vorsichtig, nichts darf verloren wirken" ODER "aggressiv, Risiko gering" (aus Interview 1.1)
+# __ZIELORDNER_LISTE__: aus Interview 1.2, exakte Ordnernamen wie im IMAP-Server angelegt
+# __DOMAIN_ZUORDNUNG__: Liste "- Ordner: domain1.tld, domain2.tld, ..." aus Interview 1.2
+# __ZEITKRITISCH_BLOCK__ / __FRISTKRITISCH_BLOCK__: nur einfügen, wenn in
+#   Interview 1.2 ein handlungsbedarf-Tag gewünscht wurde (siehe
+#   config.toml.example). Muster für __FRISTKRITISCH_BLOCK__:
+#
+#   Fristkritisch (Betreff/Inhalt enthält Hinweise wie "Frist", "Mahnung",
+#   "fällig", "kündbar"): NICHT verschieben. Stattdessen set_email_tags mit
+#   tags=["handlungsbedarf"], operation="add" auf der Mail in INBOX.
+#
+#   Und Schritt 3a im Ablauf oben ergänzen: "Fristkritische Mails NICHT
+#   verschieben, sondern per set_email_tags markieren."
+# Falls kein Tag gewünscht: beide Platzhalter und den Satz "Fristkritische
+# ... NICHT" ersatzlos entfernen.
