@@ -50,7 +50,7 @@ Claude führt dann durch ein Interview (E-Mail-Konten, IMAP-Zugangsdaten, gewün
 
 ## Sicherheit, kurz zusammengefasst
 
-Der Skill konfiguriert den zugrundeliegenden Mail-Server standardmäßig **ohne** Versand-Zugangsdaten (SMTP) — Senden ist dadurch nicht nur verboten, sondern technisch unmöglich, unabhängig davon, was Claude tut. Zusätzlich ist Claude bei jedem automatischen Lauf auf lesen/verschieben/markieren beschränkt. Details: Abschnitt 0 in `SKILL.md`. Bekannte Grenzen und wie du eine Sicherheitslücke meldest: [SECURITY.md](SECURITY.md).
+Der Skill konfiguriert den zugrundeliegenden Mail-Server standardmäßig **ohne** Versand-Zugangsdaten (SMTP) — Senden ist dadurch nicht nur verboten, sondern technisch unmöglich, unabhängig davon, was Claude tut. Zusätzlich ist Claude bei jedem automatischen Lauf auf lesen/verschieben/markieren beschränkt. Details: Abschnitt 0 in `SKILL.md`. Bekannte Grenzen: [SECURITY.md](SECURITY.md).
 
 ## Bereits live getestet
 
@@ -110,7 +110,7 @@ Claude then walks you through an interview (email accounts, IMAP credentials, ta
 
 ## Security in short
 
-By default the skill configures the underlying mail server **without** sending credentials (SMTP) — sending is therefore not just forbidden but technically impossible, regardless of what Claude does. In addition, Claude is restricted to reading/moving/tagging on every automatic run. Details: section 0 in `SKILL.md`. Known limits and how to report a vulnerability: [SECURITY.md](SECURITY.md#english).
+By default the skill configures the underlying mail server **without** sending credentials (SMTP) — sending is therefore not just forbidden but technically impossible, regardless of what Claude does. In addition, Claude is restricted to reading/moving/tagging on every automatic run. Details: section 0 in `SKILL.md`. Known limits: [SECURITY.md](SECURITY.md#english).
 
 ## Already tested live
 
