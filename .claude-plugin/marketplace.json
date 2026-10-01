@@ -1,0 +1,15 @@
+{
+  "name": "mail-sort-setup",
+  "owner": {
+    "name": "Don-Wombat",
+    "url": "https://github.com/Don-Wombat"
+  },
+  "description": "Claude Code plugin for guided, read-only email sorting setup.",
+  "plugins": [
+    {
+      "name": "mail-sort-setup",
+      "source": "./",
+      "description": "Guided setup of an automatic, read-only email sorting for any IMAP account. Never sends, deletes or forwards mail."
+    }
+  ]
+}

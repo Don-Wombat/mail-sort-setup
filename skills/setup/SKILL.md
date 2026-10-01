@@ -1,5 +1,5 @@
 ---
-name: mail-sort-setup
+name: setup
 description: Führt eine geführte, interviewbasierte Einrichtung einer automatischen, read-only E-Mail-Sortierung durch (IMAP via mcp-email-server, periodischer Claude-Lauf). Nutzen, wenn jemand eine automatische Mail-Sortierung durch Claude für sich selbst einrichten möchte, egal ob in einem Docker-Container mit selbstheilenden Claude-Sessions oder mit einer lokalen Claude-Code-Instanz.
 ---
 

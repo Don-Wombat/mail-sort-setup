@@ -1,0 +1,13 @@
+{
+  "name": "mail-sort-setup",
+  "displayName": "Mail Sort Setup",
+  "description": "Guided setup of an automatic, read-only email sorting for any IMAP account (Gmail, GMX, Web.de, Outlook, ...). Never sends, deletes or forwards mail.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Don-Wombat",
+    "url": "https://github.com/Don-Wombat"
+  },
+  "homepage": "https://github.com/Don-Wombat/mail-sort-setup",
+  "repository": "https://github.com/Don-Wombat/mail-sort-setup",
+  "keywords": ["email", "imap", "gmail", "gmx", "mcp", "inbox"]
+}

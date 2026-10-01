@@ -11,7 +11,7 @@
 - **Im Zweifel nichts tun.** Mails ohne eindeutige Regel bleiben im Posteingang.
 - **Testlauf vor Automatisierung.** Nichts läuft automatisch, bevor du den ersten Lauf geprüft hast.
 
-Details: Abschnitt 0 in `SKILL.md`.
+Details: Abschnitt 0 in `skills/setup/SKILL.md`.
 
 ## Was nicht abgesichert ist (bekannte Grenzen)
 
@@ -39,7 +39,7 @@ Details: Abschnitt 0 in `SKILL.md`.
 - **When in doubt, do nothing.** Mails without a clear rule stay in the inbox.
 - **Test run before automation.** Nothing runs automatically until you have reviewed the first run.
 
-Details: section 0 in `SKILL.md`.
+Details: section 0 in `skills/setup/SKILL.md`.
 
 ## What is not protected (known limits)
 

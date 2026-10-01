@@ -4,9 +4,10 @@
 
 Claude-Code-Skill: geführte Einrichtung einer automatischen, **read-only** E-Mail-Sortierung für beliebige IMAP-Konten (Gmail, GMX, Web.de, Outlook, ...). Claude liest Mails und verschiebt/markiert sie zwischen den eigenen Ordnern — es wird nie etwas gesendet, endgültig gelöscht oder weitergeleitet.
 
-- `SKILL.md` — der Skill selbst (Interview, Einrichtung, Testlauf, Rückfrage-Runde)
-- `templates/` — Vorlagen (Prompt, Loop-Skript, systemd/cron, `config.toml`)
-- `INSTALL.md` — dieselbe Installationsanleitung als eigene Datei
+- `skills/setup/SKILL.md` — der Skill selbst (Interview, Einrichtung, Testlauf, Rückfrage-Runde)
+- `skills/setup/templates/` — Vorlagen (Prompt, Loop-Skript, systemd/cron, `config.toml`)
+- `.claude-plugin/` — Plugin- und Marketplace-Beschreibung (für die Installation über Claude Code)
+- `INSTALL.md` — kurze Installationsanleitung als eigene Datei
 
 ## Voraussetzung
 
@@ -17,19 +18,26 @@ Claude Code muss entweder
 
 ## Installation (einmalig)
 
-Auf dem Rechner/Server, auf dem Claude Code läuft (Docker-Container oder lokale Installation):
+Auf dem Rechner/Server, auf dem Claude Code läuft (Docker-Container oder lokale Installation), im Terminal:
+
+```bash
+claude plugin marketplace add Don-Wombat/mail-sort-setup
+claude plugin install mail-sort-setup@mail-sort-setup
+```
+
+Oder direkt in einer laufenden Claude-Code-Session:
+
+```
+/plugin marketplace add Don-Wombat/mail-sort-setup
+/plugin install mail-sort-setup@mail-sort-setup
+```
+
+Falls der Skill nicht sofort auftaucht: `/reload-plugins` eingeben oder Claude Code neu starten. Updates später mit `claude plugin update mail-sort-setup@mail-sort-setup`.
+
+**Alternative ohne Marketplace** (Git-Clone; Claude Code lädt den Ordner als Plugin, der Ordnername ist frei wählbar):
 
 ```bash
 git clone https://github.com/Don-Wombat/mail-sort-setup.git ~/.claude/skills/mail-sort-setup
-```
-
-Der Ordnername unter `~/.claude/skills/` **muss `mail-sort-setup` heißen**, exakt wie in der `name:`-Zeile im Frontmatter von `SKILL.md` — danach erscheint der Skill automatisch in Claude Code. Falls er nicht sofort in der Liste auftaucht, Claude Code neu starten oder eine neue Session öffnen.
-
-Alternativ ohne Git: den kompletten Ordner (inkl. `SKILL.md` und `templates/`) kopieren:
-
-```bash
-mkdir -p ~/.claude/skills/mail-sort-setup
-cp -r /pfad/zu/mail-skill/* ~/.claude/skills/mail-sort-setup/
 ```
 
 ## Nutzen
@@ -37,7 +45,7 @@ cp -r /pfad/zu/mail-skill/* ~/.claude/skills/mail-sort-setup/
 In einer Claude-Code-Session einfach eingeben:
 
 ```
-/mail-sort-setup
+/mail-sort-setup:setup
 ```
 
 Claude führt dann durch ein Interview (E-Mail-Konten, IMAP-Zugangsdaten, gewünschte Zielordner, Zeitplan) und richtet alles selbst ein — inklusive eines Testlaufs, bei dem du das Ergebnis erst prüfst und korrigieren kannst, und einer Rückfrage-Runde danach (was blieb unsortiert, ist etwas falsch gelandet), bevor irgendetwas automatisch läuft.
@@ -50,7 +58,7 @@ Claude führt dann durch ein Interview (E-Mail-Konten, IMAP-Zugangsdaten, gewün
 
 ## Sicherheit, kurz zusammengefasst
 
-Der Skill konfiguriert den zugrundeliegenden Mail-Server standardmäßig **ohne** Versand-Zugangsdaten (SMTP) — Senden ist dadurch nicht nur verboten, sondern technisch unmöglich, unabhängig davon, was Claude tut. Zusätzlich ist Claude bei jedem automatischen Lauf auf lesen/verschieben/markieren beschränkt. Details: Abschnitt 0 in `SKILL.md`. Bekannte Grenzen: [SECURITY.md](SECURITY.md).
+Der Skill konfiguriert den zugrundeliegenden Mail-Server standardmäßig **ohne** Versand-Zugangsdaten (SMTP) — Senden ist dadurch nicht nur verboten, sondern technisch unmöglich, unabhängig davon, was Claude tut. Zusätzlich ist Claude bei jedem automatischen Lauf auf lesen/verschieben/markieren beschränkt. Details: Abschnitt 0 in `skills/setup/SKILL.md`. Bekannte Grenzen: [SECURITY.md](SECURITY.md).
 
 ## Bereits live getestet
 
@@ -66,9 +74,10 @@ Der Skill konfiguriert den zugrundeliegenden Mail-Server standardmäßig **ohne*
 
 Claude Code skill: guided setup of an automatic, **read-only** email sorting for any IMAP account (Gmail, GMX, Web.de, Outlook, ...). Claude reads emails and moves/tags them between your own folders — it never sends, permanently deletes or forwards anything.
 
-- `SKILL.md` — the skill itself (interview, setup, test run, follow-up round)
-- `templates/` — templates (prompt, loop script, systemd/cron, `config.toml`)
-- `INSTALL.md` — the same installation guide as a separate file (German)
+- `skills/setup/SKILL.md` — the skill itself (interview, setup, test run, follow-up round)
+- `skills/setup/templates/` — templates (prompt, loop script, systemd/cron, `config.toml`)
+- `.claude-plugin/` — plugin and marketplace manifests (for installing through Claude Code)
+- `INSTALL.md` — short installation guide as a separate file (German)
 
 ## Requirements
 
@@ -79,19 +88,26 @@ Claude Code must either
 
 ## Installation (one-time)
 
-On the machine/server where Claude Code runs (Docker container or local install):
+On the machine/server where Claude Code runs (Docker container or local install), in a terminal:
+
+```bash
+claude plugin marketplace add Don-Wombat/mail-sort-setup
+claude plugin install mail-sort-setup@mail-sort-setup
+```
+
+Or directly inside a running Claude Code session:
+
+```
+/plugin marketplace add Don-Wombat/mail-sort-setup
+/plugin install mail-sort-setup@mail-sort-setup
+```
+
+If the skill does not show up right away: enter `/reload-plugins` or restart Claude Code. Update later with `claude plugin update mail-sort-setup@mail-sort-setup`.
+
+**Alternative without a marketplace** (Git clone; Claude Code loads the folder as a plugin, the folder name is up to you):
 
 ```bash
 git clone https://github.com/Don-Wombat/mail-sort-setup.git ~/.claude/skills/mail-sort-setup
-```
-
-The folder name under `~/.claude/skills/` **must be `mail-sort-setup`**, exactly as in the `name:` line of the `SKILL.md` frontmatter — the skill then shows up in Claude Code automatically. If it does not appear right away, restart Claude Code or open a new session.
-
-Alternatively, without Git: copy the whole folder (including `SKILL.md` and `templates/`):
-
-```bash
-mkdir -p ~/.claude/skills/mail-sort-setup
-cp -r /path/to/mail-skill/* ~/.claude/skills/mail-sort-setup/
 ```
 
 ## Usage
@@ -99,7 +115,7 @@ cp -r /path/to/mail-skill/* ~/.claude/skills/mail-sort-setup/
 In a Claude Code session, simply enter:
 
 ```
-/mail-sort-setup
+/mail-sort-setup:setup
 ```
 
 Claude then walks you through an interview (email accounts, IMAP credentials, target folders, schedule) and sets everything up itself — including a test run where you review the result first and can correct it, and a follow-up round afterwards (what stayed unsorted, did anything land in the wrong place), before anything runs automatically.
@@ -112,7 +128,7 @@ Claude then walks you through an interview (email accounts, IMAP credentials, ta
 
 ## Security in short
 
-By default the skill configures the underlying mail server **without** sending credentials (SMTP) — sending is therefore not just forbidden but technically impossible, regardless of what Claude does. In addition, Claude is restricted to reading/moving/tagging on every automatic run. Details: section 0 in `SKILL.md`. Known limits: [SECURITY.md](SECURITY.md#english).
+By default the skill configures the underlying mail server **without** sending credentials (SMTP) — sending is therefore not just forbidden but technically impossible, regardless of what Claude does. In addition, Claude is restricted to reading/moving/tagging on every automatic run. Details: section 0 in `skills/setup/SKILL.md`. Known limits: [SECURITY.md](SECURITY.md#english).
 
 ## Already tested live
 
