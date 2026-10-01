@@ -40,6 +40,7 @@ Gib am Ende eine kurze Zusammenfassung aus:
   wenn die Liste kurz ist.
 
 # --- Hinweise für Claude beim Ausfüllen dieser Vorlage (diesen Kommentarblock vor dem Speichern entfernen) ---
+# __ACCOUNT_NAME__   : account_name des Kontos aus config.toml (exakt wie in list_available_accounts)
 # __TON__            : "vorsichtig, nichts darf verloren wirken" ODER "aggressiv, Risiko gering" (aus Interview 1.1)
 # __ZIELORDNER_LISTE__: aus Interview 1.2, exakte Ordnernamen wie im IMAP-Server angelegt
 # __DOMAIN_ZUORDNUNG__: Liste "- Ordner: domain1.tld, domain2.tld, ..." aus Interview 1.2

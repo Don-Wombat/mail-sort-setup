@@ -204,13 +204,20 @@ Kein published Port nötig, wenn Claude Code im selben Docker-Netz hängt —
 dann intern über den Containernamen erreichbar. Danach registrieren:
 
 ```bash
-claude mcp add --transport http mail-sort http://mail-mcp-sort:8000/mcp -s local
+claude mcp add --transport http mail http://mail-mcp-sort:8000/mcp -s local
 ```
+
+**Der Registrierungsname muss `mail` lauten** — daraus ergibt sich das
+Tool-Präfix `mcp__mail__*`, auf das `--allowedTools` im Loop (Abschnitt 0)
+und der Prompt zugeschnitten sind. Jeder andere Name würde dazu führen, dass
+alle Tool-Aufrufe abgelehnt werden. Falls der Nutzer bereits einen MCP-Server
+namens `mail` für dasselbe Postfach registriert hat, diesen wiederverwenden
+(`claude mcp list` prüfen), nicht doppelt anlegen.
 
 ### Lokaler Pfad (keine Docker nötig)
 
 ```bash
-claude mcp add mail-sort -s local -- uvx mcp-email-server@latest stdio
+claude mcp add mail -s local -- uvx mcp-email-server@latest stdio
 ```
 
 `uvx` braucht [uv](https://docs.astral.sh/uv/) — falls nicht installiert,
