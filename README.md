@@ -54,7 +54,9 @@ Der Skill konfiguriert den zugrundeliegenden Mail-Server standardmäßig **ohne*
 
 ## Bereits live getestet
 
-Am 2026-09-28 gegen ein echtes Gmail-Konto validiert (Docker-Pfad): Erstlauf-Erkennung, Domain-basierte Klassifizierung, Login-Ausnahmen, die Rückfrage-Runde nach unsortierten Mails — alles wie vorgesehen. Der lokale Pfad (ohne Docker) ist bisher nur nach Dokumentationslage gebaut, noch nicht real durchgespielt.
+**Der Sortier-Algorithmus selbst** (Regelwerk, Loop und Prompt-Aufbau, auf denen dieser Skill basiert) läuft bereits seit mehreren Wochen im täglichen Einsatz auf echten Postfächern (GMX und Gmail) und ist dort entsprechend lange erprobt.
+
+**Der Setup-Skill** (die geführte Einrichtung in diesem Repository) wurde dagegen am 2026-09-28 gegen ein echtes Gmail-Konto validiert (Docker-Pfad): Erstlauf-Erkennung, Domain-basierte Klassifizierung, Login-Ausnahmen, die Rückfrage-Runde nach unsortierten Mails — alles wie vorgesehen. Dieses Datum gilt nur für den Test des Setup-Skills, nicht für den Algorithmus. Der lokale Pfad (ohne Docker) ist bisher nur nach Dokumentationslage gebaut, noch nicht real durchgespielt.
 
 ---
 
@@ -114,4 +116,6 @@ By default the skill configures the underlying mail server **without** sending c
 
 ## Already tested live
 
-Validated on 2026-09-28 against a real Gmail account (Docker path): first-run detection, domain-based classification, login exceptions, the follow-up round for unsorted mails — all as intended. The local path (without Docker) has so far only been built from documentation and not yet run for real.
+**The sorting algorithm itself** (rule set, loop and prompt structure that this skill is based on) has been in daily use on real mailboxes (GMX and Gmail) for several weeks and is correspondingly well proven.
+
+**The setup skill** (the guided setup in this repository), on the other hand, was validated on 2026-09-28 against a real Gmail account (Docker path): first-run detection, domain-based classification, login exceptions, the follow-up round for unsorted mails — all as intended. This date applies only to the test of the setup skill, not to the algorithm. The local path (without Docker) has so far only been built from documentation and not yet run for real.
