@@ -74,7 +74,7 @@ serverseitig auch bei vorhandenem SMTP gesperrt.)
 
 ## Ablauf-Überblick
 
-0. Umgebung prüfen (Docker-Pfad vs. lokaler Pfad, Claude-Code-Version)
+0. Umgebung prüfen (Docker-Pfad vs. lokaler Pfad, Linux/macOS vs. Windows, Claude-Code-Version)
 1. Interview: Konten, IMAP-Zugang, Ordnerstruktur, Ton (vorsichtig/aggressiv)
 1b. Projektordner anlegen (inkl. `mail-mcp.json`)
 2. `mcp-email-server` aufsetzen, Passwort eintragen lassen, registrieren,
@@ -117,6 +117,23 @@ claude --help | grep -E -c 'dontAsk|--strict-mcp-config|--tools'   # sollte mind
   Neustart-Schleife gibt, das pro Projekt ein eigenes `tmux`-Fenster startet).
 - **Lokaler Pfad**, wenn keine Container-Umgebung erkennbar ist — dann
   zählt das Betriebssystem für die Zeitplan-Mechanik (Phase 5).
+- **Windows (nativ):** Erkennbar daran, dass deine Shell PowerShell ist
+  (ohne Git for Windows nutzt Claude Code dort das PowerShell-Werkzeug)
+  oder `uname -s` mit `MINGW`/`MSYS` beginnt (Git Bash). In PowerShell
+  stattdessen prüfen:
+
+  ```powershell
+  $env:OS                      # Windows_NT
+  $PSVersionTable.PSVersion    # 5.1 (vorinstalliert) oder 7.x
+  claude --version
+  (claude --help | Select-String -Pattern 'dontAsk|--strict-mcp-config|--tools').Count   # mindestens 3
+  ```
+
+  Auf Windows gilt der lokale Pfad mit den Windows-Vorlagen
+  (`templates/windows/`): Der Loop ist dort ein PowerShell-Skript, die
+  Zeitsteuerung übernimmt die Windows-Aufgabenplanung. Git Bash oder WSL
+  sind **nicht** nötig. (Wer Claude Code ohnehin in WSL betreibt, nutzt
+  dort den normalen Linux-Pfad.)
 
 Falls beides unklar bleibt: **fragen, nicht raten.** Voraussetzung laut
 diesem Skill ist eines von beidem — ohne eine Form von Persistenz
@@ -214,6 +231,11 @@ Projekte-Verzeichnis der jeweiligen Claude-Code-Installation anlegen
   unbeaufsichtigt, ein stilles Upgrade soll dort nichts ändern.
 - (Die übrigen Dateien folgen in Phase 4.)
 
+Unter Windows: Ordner im eigenen Benutzerprofil anlegen (z. B.
+`%USERPROFILE%\mail-sort`). Dort haben andere Benutzer standardmäßig
+keinen Zugriff; `chmod` entfällt. In `mail-mcp.json` sind keine Pfade
+enthalten, die Vorlagen gelten unverändert.
+
 Danach in diesem Verzeichnis weiterarbeiten (Claude Code dorthin
 starten), damit die Registrierung in Phase 2 zu diesem Projekt gehört.
 
@@ -238,18 +260,23 @@ in 1.2 ein Tag gewünscht wurde.
 
 Die Datei in ein Verzeichnis legen, das nur der Nutzer lesen kann
 (Verzeichnis `chmod 700`, Datei `chmod 600`) und **nie** in ein
-Git-Repository.
+Git-Repository. Unter Windows statt `chmod` die Vererbung entfernen und nur
+dem eigenen Benutzer Zugriff geben (PowerShell):
+`icacls <pfad>\config.toml /inheritance:r /grant:r "$($env:USERNAME):(F)"`.
 
 ### Passwort eintragen (nicht im Chat)
 
 1. Schreibe die Config mit dem Platzhalter `HIER-APP-PASSWORT-EINTRAGEN`
    als Passwort, `chmod 600`.
 2. Sag dem Nutzer den Pfad und bitte ihn, die Datei **in seinem eigenen
-   Terminal** zu öffnen (z. B. `nano <pfad>`) und den Platzhalter durch das
-   App-Passwort zu ersetzen. Nicht in den Chat schreiben.
+   Terminal** zu öffnen (z. B. `nano <pfad>`, unter Windows
+   `notepad <pfad>`) und den Platzhalter durch das App-Passwort zu
+   ersetzen. Nicht in den Chat schreiben.
 3. Prüfe ohne den Inhalt anzuzeigen: `grep -c 'HIER-APP-PASSWORT-EINTRAGEN'
    <pfad>` muss `0` liefern (bei mehreren Konten: Anzahl der noch offenen
-   Platzhalter). Zeig die Datei nicht an.
+   Platzhalter); unter Windows
+   `(Select-String -Path <pfad> -Pattern 'HIER-APP-PASSWORT-EINTRAGEN' -SimpleMatch).Count`.
+   Zeig die Datei nicht an.
 4. Nur wenn der Nutzer **ausdrücklich** darauf besteht, das Passwort
    trotzdem im Chat zu nennen: zulassen, aber vorher darauf hinweisen,
    dass es im Transkript landet, und nach der Einrichtung empfehlen, das
@@ -334,6 +361,16 @@ Version wie in `mail-mcp.json`. Die Config-Datei liegt dann lokal unter
 alte Datei beim ersten Start selbst). Auch hier den `claude mcp add`-Befehl
 im Projektverzeichnis aus Phase 1b ausführen.
 
+**Windows:** `uv` per `winget install --id astral-sh.uv -e` oder mit dem
+offiziellen Installer aus der uv-Dokumentation installieren (danach ein
+neues Terminal öffnen). `~` steht für `%USERPROFILE%`, die Config liegt also
+unter `%USERPROFILE%\.config\mcp-email-server\config.toml`. Ist Claude
+Code per npm installiert (`claude.cmd`/`claude.ps1`), kann PowerShell das
+`--` im `claude mcp add`-Befehl verschlucken — den Befehl dann über
+`cmd /c "claude mcp add mail -s local -- uvx mcp-email-server==<VERSION> stdio"`
+ausführen. Der automatische Lauf ist davon nicht betroffen (er liest
+`mail-mcp.json`).
+
 ### Verifizieren und Zielordner prüfen
 
 Nach dem Einrichten:
@@ -383,7 +420,7 @@ Im Projektordner aus Phase 1b (neben `mail-mcp.json`):
 
 | Datei | Zweck |
 |---|---|
-| `mail-sort-loop.sh` | aus `templates/mail-sort-loop.sh`, mit den Werten aus Phase 1/5 befüllt |
+| `mail-sort-loop.sh` | aus `templates/mail-sort-loop.sh`, mit den Werten aus Phase 1/5 befüllt — **unter Windows stattdessen** `mail-sort-loop.ps1` aus `templates/windows/mail-sort-loop.ps1` (gleiche Variablen, gleiches Verhalten) |
 | `mail-sort-prompt.txt` | aus Phase 3 |
 | `mail-sort-last-run.txt` | leer anlegen — Watermark, wird vom Loop selbst befüllt |
 | `mail-sort.log` | leer anlegen |
@@ -408,6 +445,11 @@ Im Projektordner aus Phase 1b (neben `mail-mcp.json`):
   in `config.toml` (im eigenen Terminal) ersetzen, MCP-Server neu starten.
 - Wo man diesen Skill erneut aufrufen kann, um die geführte Einrichtung
   für ein weiteres Konto/Projekt zu wiederholen.
+
+Unter Windows lauten die Befehle im README (PowerShell, im Projektordner):
+`powershell -NoProfile -ExecutionPolicy Bypass -File .\mail-sort-loop.ps1 -Once`
+(bzw. `... -Once -Full`) und zum Mitlesen des Logs
+`Get-Content .\mail-sort.log -Wait -Tail 50`.
 
 Falls Docker-Pfad mit vorhandenem `entrypoint.sh`: dem Nutzer den
 konkreten Codeblock zeigen, den er dort ergänzen muss (Muster: eigenes
@@ -442,6 +484,15 @@ Je nach Umgebung (Phase 0) unterschiedlich umgesetzt:
   laufen (Server, Abwesenheit): `loginctl enable-linger "$USER"`.
 - **Lokaler Pfad, klassisches Cron (Linux/macOS):** Zeile aus
   `templates/crontab-example.txt` anpassen, `crontab -e`.
+- **Lokaler Pfad, Windows:** `templates/windows/register-mail-sort-task.ps1`
+  in den Projektordner kopieren und ausführen (keine Adminrechte nötig):
+  `powershell -NoProfile -ExecutionPolicy Bypass -File .\register-mail-sort-task.ps1 -ProjectDir "<projektordner>" -StartAt 07:00 -IntervalHours 4`.
+  Das legt eine Aufgabe `mail-sort` in der Aufgabenplanung an (je ein
+  täglicher Zeitpunkt pro Intervall, verpasste Läufe werden nachgeholt,
+  Abbruch nach 35 Minuten, kein paralleler Start) und gibt den nächsten
+  Lauf-Zeitpunkt aus. Die Aufgabe läuft nur, solange der Nutzer angemeldet
+  ist. Alternativ (ohne Aufgabenplanung) kann `mail-sort-loop.ps1` ohne
+  `-Once` als Endlosschleife in einem offenen Fenster laufen.
 - **Lokaler Pfad, macOS ohne Cron-Präferenz:** `launchd` ist möglich, aber
   deutlich komplexer als Cron — nur anbieten, wenn der Nutzer das
   ausdrücklich will, sonst Cron empfehlen (niedrigere Einstiegshürde).
@@ -457,7 +508,8 @@ alle 4 Stunden"), nicht nur die Konfiguration abstrakt beschreiben.
 **Nicht überspringen, auch wenn der Nutzer es eilig hat.** Vor dem
 Aktivieren des automatischen Zeitplans:
 
-1. `bash mail-sort-loop.sh --once` gemeinsam mit dem Nutzer ausführen.
+1. `bash mail-sort-loop.sh --once` gemeinsam mit dem Nutzer ausführen
+   (Windows: `powershell -NoProfile -ExecutionPolicy Bypass -File .\mail-sort-loop.ps1 -Once`).
    Bei einem sehr vollen Posteingang vorher ankündigen, dass das dauern
    kann (der Loop bricht einen Lauf nach `MAIL_SORT_RUN_TIMEOUT_SECONDS`,
    30 Minuten, ab; ein abgebrochener Lauf setzt den Watermark nicht und
@@ -518,7 +570,7 @@ fassen (z. B. Ausnahme für einen Betreff-Fall ergänzen), betroffene Mails
 auf Wunsch des Nutzers per `move_emails` zurück ins Postfach/in den
 korrekten Ordner verschieben, und **Schritt 1 dieser Phase mit den
 korrigierten Regeln wiederholen** — mit `bash mail-sort-loop.sh --once
---full`. Ein normaler `--once`-Lauf würde wegen des Watermarks nur Mails
+--full` (Windows: `... mail-sort-loop.ps1 -Once -Full`). Ein normaler `--once`-Lauf würde wegen des Watermarks nur Mails
 seit dem letzten Lauf ansehen und die zuvor unsortierten Mails gar nicht
 mehr betrachten; `--full` ignoriert den Watermark und prüft den ganzen
 Posteingang erneut. Wiederholen, bis der Nutzer zufrieden ist. Erst danach
@@ -575,6 +627,13 @@ Kurze, für Laien verständliche Zusammenfassung, keine Wall of Text:
   entweder `MAIL_SORT_FIRST_RUN_SINCE` im Loop auf ein Datum setzen
   (z. B. nur das letzte Jahr) oder den Lauf mehrfach starten, bis er
   durchläuft. Dem Nutzer das vorher ankündigen.
+- **Windows: der Windows-Pfad ist bisher nur mit PowerShell 7 unter Linux
+  gegen einen Test-Stub geprüft**, noch nicht auf einem echten
+  Windows-Rechner. Bei Problemen zuerst manuell
+  `mail-sort-loop.ps1 -Once` im Terminal laufen lassen und die Ausgabe
+  ansehen. Das Zeitlimit beendet auch hängende Kindprozesse (u. a. als
+  Schutz vor hängenden headless-`claude.exe`-Prozessen, wie sie in
+  Claude-Code-Issue #68626 für einen anderen Aufrufweg beschrieben sind).
 - **App-Passwörter laufen ab / werden widerrufen.** Wenn der Loop plötzlich
   Auth-Fehler im Log zeigt, ist das meist die Ursache — im `README.md`
   erwähnen, nicht nur als generischen Fehlerfall behandeln.
@@ -593,4 +652,6 @@ templates/
   systemd/mail-sort.service        # lokaler Pfad, Linux
   systemd/mail-sort.timer          # lokaler Pfad, Linux
   crontab-example.txt              # lokaler Pfad, klassisches Cron
+  windows/mail-sort-loop.ps1       # lokaler Pfad, Windows (PowerShell 5.1/7)
+  windows/register-mail-sort-task.ps1  # lokaler Pfad, Windows-Aufgabenplanung
 ```
