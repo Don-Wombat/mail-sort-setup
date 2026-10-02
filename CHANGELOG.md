@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.2.0
+
+- Windows nativ: `templates/windows/mail-sort-loop.ps1` (PowerShell 5.1/7,
+  gleiches Verhalten wie der Bash-Loop: gesperrter `claude`-Aufruf, Prompt
+  per stdin, `-Once`/`-Full`, Lock, Zeitlimit inkl. Kindprozessen,
+  Watermark mit Marge, Log-Rotation) und
+  `templates/windows/register-mail-sort-task.ps1` für die
+  Windows-Aufgabenplanung. Kein Git Bash/WSL nötig.
+- SKILL.md: Windows-Erkennung in Phase 0, Windows-Hinweise für Rechte
+  (`icacls`), Passwort-Prüfung, uv-Installation, Zeitplan und Testlauf.
+- Hinweis: Der Windows-Pfad ist mit PowerShell 7 gegen einen Test-Stub
+  geprüft, noch nicht auf einem echten Windows-Rechner.
+
 ## 1.1.0
 
 Überarbeitung nach externem Review.

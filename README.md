@@ -5,7 +5,7 @@
 Claude-Code-Skill: geführte Einrichtung einer automatischen, **read-only** E-Mail-Sortierung für beliebige IMAP-Konten (Gmail, GMX, Web.de, Outlook, ...). Claude liest Mails und verschiebt/markiert sie zwischen den eigenen Ordnern — es wird nie etwas gesendet, endgültig gelöscht oder weitergeleitet.
 
 - `skills/setup/SKILL.md` — der Skill selbst (Interview, Einrichtung, Testlauf, Rückfrage-Runde)
-- `skills/setup/templates/` — Vorlagen (Prompt, Loop-Skript, systemd/cron, `config.toml`)
+- `skills/setup/templates/` — Vorlagen (Prompt, Loop-Skript, systemd/cron, `config.toml`, Windows-Varianten unter `windows/`)
 - `.claude-plugin/` — Plugin- und Marketplace-Beschreibung (für die Installation über Claude Code)
 - `INSTALL.md` — kurze Installationsanleitung als eigene Datei
 
@@ -14,7 +14,7 @@ Claude-Code-Skill: geführte Einrichtung einer automatischen, **read-only** E-Ma
 Claude Code muss entweder
 
 - in einem Docker-Container laufen, der abgestürzte/beendete Sessions automatisch neu startet (self-healing), **oder**
-- als lokale Installation auf dem eigenen Rechner laufen (dann übernimmt Cron/systemd/launchd die Zeitsteuerung, keine Docker-Voraussetzung).
+- als lokale Installation auf dem eigenen Rechner laufen (dann übernimmt Cron/systemd/launchd die Zeitsteuerung, keine Docker-Voraussetzung). **Windows wird nativ unterstützt:** dort laufen Loop und Zeitsteuerung über PowerShell und die Windows-Aufgabenplanung, Git Bash oder WSL sind nicht nötig.
 
 ## Installation (einmalig)
 
@@ -64,7 +64,7 @@ Der Skill konfiguriert den zugrundeliegenden Mail-Server standardmäßig **ohne*
 
 **Der Sortier-Algorithmus selbst** (Regelwerk, Loop und Prompt-Aufbau, auf denen dieser Skill basiert) läuft bereits seit mehreren Wochen im täglichen Einsatz auf echten Postfächern (GMX und Gmail) und ist dort entsprechend lange erprobt.
 
-**Der Setup-Skill** (die geführte Einrichtung in diesem Repository) wurde dagegen am 2026-09-28 gegen ein echtes Gmail-Konto validiert (Docker-Pfad): Erstlauf-Erkennung, Domain-basierte Klassifizierung, Login-Ausnahmen, die Rückfrage-Runde nach unsortierten Mails — alles wie vorgesehen. Dieses Datum gilt nur für den Test des Setup-Skills, nicht für den Algorithmus. **Seit Version 1.1.0** wurde der Loop deutlich überarbeitet (gehärteter `claude`-Aufruf, Paging, Lock, Zeitlimit); der Docker-Pfad muss damit erneut gegen ein echtes Konto validiert werden. Der lokale Pfad (ohne Docker) ist bisher nur nach Dokumentationslage gebaut, noch nicht real durchgespielt.
+**Der Setup-Skill** (die geführte Einrichtung in diesem Repository) wurde dagegen am 2026-09-28 gegen ein echtes Gmail-Konto validiert (Docker-Pfad): Erstlauf-Erkennung, Domain-basierte Klassifizierung, Login-Ausnahmen, die Rückfrage-Runde nach unsortierten Mails — alles wie vorgesehen. Dieses Datum gilt nur für den Test des Setup-Skills, nicht für den Algorithmus. **Seit Version 1.1.0** wurde der Loop deutlich überarbeitet (gehärteter `claude`-Aufruf, Paging, Lock, Zeitlimit); der Docker-Pfad muss damit erneut gegen ein echtes Konto validiert werden. Der lokale Pfad (ohne Docker) ist bisher nur nach Dokumentationslage gebaut, noch nicht real durchgespielt. Der Windows-Pfad (ab 1.2.0) ist mit PowerShell 7 gegen einen Test-Stub geprüft, aber noch nicht auf einem echten Windows-Rechner.
 
 ---
 
@@ -75,7 +75,7 @@ Der Skill konfiguriert den zugrundeliegenden Mail-Server standardmäßig **ohne*
 Claude Code skill: guided setup of an automatic, **read-only** email sorting for any IMAP account (Gmail, GMX, Web.de, Outlook, ...). Claude reads emails and moves/tags them between your own folders — it never sends, permanently deletes or forwards anything.
 
 - `skills/setup/SKILL.md` — the skill itself (interview, setup, test run, follow-up round)
-- `skills/setup/templates/` — templates (prompt, loop script, systemd/cron, `config.toml`)
+- `skills/setup/templates/` — templates (prompt, loop script, systemd/cron, `config.toml`, Windows variants under `windows/`)
 - `.claude-plugin/` — plugin and marketplace manifests (for installing through Claude Code)
 - `INSTALL.md` — short installation guide as a separate file (German)
 
@@ -84,7 +84,7 @@ Claude Code skill: guided setup of an automatic, **read-only** email sorting for
 Claude Code must either
 
 - run in a Docker container that automatically restarts crashed/stopped sessions (self-healing), **or**
-- be installed locally on your own machine (then cron/systemd/launchd handles the scheduling, no Docker required).
+- be installed locally on your own machine (then cron/systemd/launchd handles the scheduling, no Docker required). **Windows is supported natively:** there the loop and the scheduling run via PowerShell and Windows Task Scheduler, no Git Bash or WSL required.
 
 ## Installation (one-time)
 
@@ -134,4 +134,4 @@ By default the skill configures the underlying mail server **without** sending c
 
 **The sorting algorithm itself** (rule set, loop and prompt structure that this skill is based on) has been in daily use on real mailboxes (GMX and Gmail) for several weeks and is correspondingly well proven.
 
-**The setup skill** (the guided setup in this repository), on the other hand, was validated on 2026-09-28 against a real Gmail account (Docker path): first-run detection, domain-based classification, login exceptions, the follow-up round for unsorted mails — all as intended. This date applies only to the test of the setup skill, not to the algorithm. **Since version 1.1.0** the loop has been substantially reworked (hardened `claude` invocation, paging, lock, timeout); the Docker path has to be validated again against a real account. The local path (without Docker) has so far only been built from documentation and not yet run for real.
+**The setup skill** (the guided setup in this repository), on the other hand, was validated on 2026-09-28 against a real Gmail account (Docker path): first-run detection, domain-based classification, login exceptions, the follow-up round for unsorted mails — all as intended. This date applies only to the test of the setup skill, not to the algorithm. **Since version 1.1.0** the loop has been substantially reworked (hardened `claude` invocation, paging, lock, timeout); the Docker path has to be validated again against a real account. The local path (without Docker) has so far only been built from documentation and not yet run for real. The Windows path (since 1.2.0) has been checked with PowerShell 7 against a test stub, but not yet on a real Windows machine.

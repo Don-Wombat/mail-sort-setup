@@ -8,7 +8,7 @@ Ausführliche Beschreibung, Voraussetzungen und Sicherheitshinweise: siehe
 
 ## Installation (einmalig)
 
-Auf dem Rechner/Server, auf dem Claude Code läuft:
+Auf dem Rechner/Server, auf dem Claude Code läuft (Linux, macOS oder Windows; unter Windows in PowerShell oder CMD):
 
 ```bash
 claude plugin marketplace add Don-Wombat/mail-sort-setup
@@ -43,4 +43,4 @@ Der Sortier-Algorithmus selbst läuft seit mehreren Wochen im täglichen
 Einsatz (GMX und Gmail). Der Setup-Skill wurde am 2026-09-28 gegen ein
 echtes Gmail-Konto validiert (Docker-Pfad); dieses Datum gilt nur für den
 Setup-Skill. Der lokale Pfad (ohne Docker) ist bisher nur nach
-Dokumentationslage gebaut, noch nicht real durchgespielt. Seit Version 1.1.0 wurde der Loop überarbeitet; der Docker-Pfad muss erneut validiert werden.
+Dokumentationslage gebaut, noch nicht real durchgespielt; der Windows-Pfad (ab 1.2.0) ist nur gegen einen Test-Stub geprüft. Seit Version 1.1.0 wurde der Loop überarbeitet; der Docker-Pfad muss erneut validiert werden.
