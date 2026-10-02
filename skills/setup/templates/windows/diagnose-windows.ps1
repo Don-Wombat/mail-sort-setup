@@ -4,13 +4,18 @@
 #   powershell -NoProfile -ExecutionPolicy Bypass -File .\diagnose-windows.ps1
 #   powershell -NoProfile -ExecutionPolicy Bypass -File .\diagnose-windows.ps1 -All
 #
+# Nicht ".\diagnose-windows.ps1" direkt starten: die Standard-Richtlinie
+# Restricted meldet sonst "Ausfuehrung von Skripts ist deaktiviert". Greift
+# auch -ExecutionPolicy Bypass nicht (Gruppenrichtlinie), ohne Dateistart:
+#   & ([scriptblock]::Create((Get-Content .\diagnose-windows.ps1 -Raw))) -All
+#
 # Standard (ohne Schalter): nur Lesen. Es wird nichts installiert, nichts
 # geaendert, kein Passwort und kein Mail-Konto angefasst. Keine Adminrechte noetig.
 #
 # Optionale Tests (jeweils eigener Schalter, -All = alle drei):
 #   -TaskTest    legt kurz eine harmlose Aufgabe 'mail-sort-diagnose' in der
 #                Aufgabenplanung an, startet sie und entfernt sie wieder.
-#   -UvTest      startet 'uvx mcp-email-server@1.11.0 --help' (laedt beim ersten
+#   -UvTest      startet 'uvx --from mcp-email-server==1.11.0 mcp-email-server --help' (laedt beim ersten
 #                Mal Pakete aus dem Internet, kann Minuten dauern; nur wenn uvx da ist).
 #   -ClaudeTest  ruft 'claude -p' mit denselben Schutz-Schaltern wie der echte
 #                Lauf auf (ein winziger API-Aufruf "Antworte OK", kein Mail-Zugriff;
@@ -408,18 +413,18 @@ if ($TaskTest) {
 if ($UvTest) {
   if ($uvxCmd) {
     Out-Line '       (uvx-Start laeuft, beim ersten Mal kann das mehrere Minuten dauern ...)' 'Gray'
-    $r = Invoke-Native $uvxCmd.Source @('mcp-email-server@1.11.0', '--help') 600
-    if ($r.TimedOut) { Add-Result 'FAIL' 'uvx mcp-email-server@1.11.0' 'Zeitueberschreitung nach 600 s (Download blockiert? Proxy/TLS-Inspection?)' }
-    elseif ($r.Code -eq 0) { Add-Result 'OK' 'uvx mcp-email-server@1.11.0' ("startet, " + $r.Seconds + " s") }
-    elseif (($r.Err + ' ' + $r.Out) -match 'os error 448|nicht vertrauensw|untrusted mount point') { Add-Result 'WARN' 'uvx mcp-email-server@1.11.0' 'Windows meldet "nicht vertrauenswuerdiger Bereitstellungspunkt" (Fehler 448) beim Zugriff auf uvs Python-Ordner. Das tritt in Remote-/SSH-Sitzungen auf; bitte den Test in einer normalen, lokal angemeldeten PowerShell wiederholen.' }
-    else { Add-Result 'FAIL' 'uvx mcp-email-server@1.11.0' ("Exit {0}: {1}" -f $r.Code, (Get-ShortText ($r.Err + ' ' + $r.Out) 400)) }
+    $r = Invoke-Native $uvxCmd.Source @('--from', 'mcp-email-server==1.11.0', 'mcp-email-server', '--help') 600
+    if ($r.TimedOut) { Add-Result 'FAIL' 'uvx mcp-email-server==1.11.0' 'Zeitueberschreitung nach 600 s (Download blockiert? Proxy/TLS-Inspection?)' }
+    elseif ($r.Code -eq 0) { Add-Result 'OK' 'uvx mcp-email-server==1.11.0' ("startet, " + $r.Seconds + " s") }
+    elseif (($r.Err + ' ' + $r.Out) -match 'os error 448|nicht vertrauensw|untrusted mount point') { Add-Result 'WARN' 'uvx mcp-email-server==1.11.0' 'Windows meldet "nicht vertrauenswuerdiger Bereitstellungspunkt" (Fehler 448) beim Zugriff auf uvs Python-Ordner. Das tritt in Remote-/SSH-Sitzungen auf; bitte den Test in einer normalen, lokal angemeldeten PowerShell wiederholen.' }
+    else { Add-Result 'FAIL' 'uvx mcp-email-server==1.11.0' ("Exit {0}: {1}" -f $r.Code, (Get-ShortText ($r.Err + ' ' + $r.Out) 400)) }
   } else { Add-Result 'INFO' 'uvx-Test' 'uebersprungen (uvx fehlt)' }
 } else { Add-Result 'INFO' 'uvx-Test' 'uebersprungen (-UvTest)' }
 
 if ($ClaudeTest) {
   if ($claudeCmd) {
     $cfg = Join-Path $tmpDir 'mcp.json'
-    [IO.File]::WriteAllText($cfg, '{"mcpServers":{"mail":{"command":"uvx","args":["mcp-email-server==1.11.0","stdio"]}}}', (New-Object Text.UTF8Encoding $false))
+    [IO.File]::WriteAllText($cfg, '{"mcpServers":{"mail":{"command":"uvx","args":["--from","mcp-email-server==1.11.0","mcp-email-server","stdio"]}}}', (New-Object Text.UTF8Encoding $false))
     $allowed = @('mcp__mail__list_available_accounts', 'mcp__mail__list_emails_metadata', 'mcp__mail__list_mailboxes', 'mcp__mail__list_email_tags', 'mcp__mail__move_emails', 'mcp__mail__set_email_tags')
     $denied = @('mcp__mail__send_email', 'mcp__mail__forward_email', 'mcp__mail__save_to_mailbox', 'mcp__mail__delete_emails', 'mcp__mail__archive_emails', 'mcp__mail__set_email_flags', 'mcp__mail__mark_emails_as_read', 'mcp__mail__get_emails_content', 'mcp__mail__download_attachment', 'mcp__mail__get_attachment_content')
     $cargs = @('-p', '--permission-mode', 'dontAsk', '--tools', '', '--strict-mcp-config', '--mcp-config', $cfg, '--allowedTools') + $allowed + @('--disallowedTools') + $denied

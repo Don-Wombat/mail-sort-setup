@@ -76,6 +76,14 @@ Wenn dein Arbeitgeber Einstellungen für Rechner oder für Claude Code vorgibt, 
 powershell -NoProfile -ExecutionPolicy Bypass -File .\diagnose-windows.ps1 -All
 ```
 
+Meldet Windows „Die Ausführung von Skripts ist auf diesem System deaktiviert“, wurde die Datei direkt (`.\diagnose-windows.ps1`) gestartet: Das blockiert die Standard-Richtlinie `Restricted`. Der Aufruf oben mit `-ExecutionPolicy Bypass` umgeht sie, ohne etwas dauerhaft zu ändern. Greift auch das nicht (Gruppenrichtlinie legt die Richtlinie fest), lässt sich der Skriptinhalt trotzdem ohne Dateistart ausführen, solange PowerShell im Modus `FullLanguage` läuft:
+
+```powershell
+& ([scriptblock]::Create((Get-Content .\diagnose-windows.ps1 -Raw))) -All
+```
+
+Das Diagnose-Skript meldet dann im Abschnitt 2 selbst, dass die Richtlinie per Gruppenrichtlinie greift und der Dateistart blockiert ist. Das ist bereits ein Befund für die IT-Freigabe. Ist auch das gesperrt, bleibt nur, die Punkte mit der IT zu klären (siehe oben).
+
 Der Bericht landet zusätzlich in `%TEMP%\mail-sort-diagnose.txt` und enthält keine Passwörter, Mail-Inhalte oder Benutzernamen. Er nennt aber die Aussteller der TLS-Zertifikate (daran erkennt man eine Firmen-CA); vor dem Weitergeben kurz durchlesen.
 
 **Vorab klären (am besten mit der IT):**
@@ -182,6 +190,14 @@ If your employer enforces settings on machines or on Claude Code, setup may get 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\diagnose-windows.ps1 -All
 ```
+
+If Windows says "running scripts is disabled on this system", the file was started directly (`.\diagnose-windows.ps1`), which the default `Restricted` policy blocks. The command above with `-ExecutionPolicy Bypass` avoids that without changing anything permanently. If that does not help either (a Group Policy fixes the execution policy), the script content can still be run without starting a file, as long as PowerShell is in `FullLanguage` mode:
+
+```powershell
+& ([scriptblock]::Create((Get-Content .\diagnose-windows.ps1 -Raw))) -All
+```
+
+Section 2 of the diagnosis then reports by itself that the policy is set by Group Policy and that starting files is blocked. That is already a finding for the IT approval. If this is blocked too, the only way forward is to clarify the points with IT (see above).
 
 The report is also saved to `%TEMP%\mail-sort-diagnose.txt` and contains no passwords, mail content or user names. It does name the issuers of the TLS certificates (that is how a company CA shows up); skim it before passing it on.
 

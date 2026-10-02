@@ -138,7 +138,9 @@ claude --help | grep -E -c 'dontAsk|--strict-mcp-config|--tools'   # sollte mind
   **Firmenrechner oder geschäftliches Claude?** Dann zuerst
   `templates/windows/diagnose-windows.ps1` ausführen lassen
   (`powershell -NoProfile -ExecutionPolicy Bypass -File .\diagnose-windows.ps1 -All`,
-  als normaler Nutzer). Es prüft nur lesend Ausführungsrichtlinie, AppLocker/WDAC,
+  als normaler Nutzer; bei „Ausführung von Skripts deaktiviert“ steht die
+  Ausweichvariante ohne Dateistart im README, Abschnitt „Auf Firmenrechnern“).
+  Es prüft nur lesend Ausführungsrichtlinie, AppLocker/WDAC,
   verwaltete Claude-Einstellungen (`managed-mcp.json`, `allowedMcpServers`) und
   TLS-Inspection und macht mit `-All` drei kleine Praxistests. Bei `FAIL`
   die Einrichtung nicht weitertreiben, sondern mit dem Nutzer klären, was die

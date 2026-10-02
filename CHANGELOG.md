@@ -35,6 +35,10 @@
 - README (DE/EN): neuer Abschnitt zu Firmenrechnern und geschäftlichem Claude
   (IT-Freigabe, Datenschutz, Microsoft 365, AppLocker/WDAC, TLS-Inspection,
   Ausführungsrichtlinie, verwaltete Claude-Code-Einstellungen).
+- README, Skill und Skript-Kopf: Hinweis, was bei „Ausführung von Skripts ist
+  deaktiviert“ hilft (`-ExecutionPolicy Bypass`; bei Gruppenrichtlinie
+  Ausweichen per Scriptblock ohne Dateistart). Auf der Windows-11-VM mit
+  simulierter Richtlinie geprüft.
 - Neu: `templates/windows/diagnose-windows.ps1`, ein Diagnose-Skript für
   Firmenrechner. Prüft vor der Einrichtung (nur lesend, ohne Adminrechte)
   Ausführungsrichtlinie, Language Mode, AppLocker/WDAC, Werkzeuge, verwaltete
