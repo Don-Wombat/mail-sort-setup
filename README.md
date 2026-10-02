@@ -58,13 +58,13 @@ Claude führt dann durch ein Interview (E-Mail-Konten, IMAP-Zugangsdaten, gewün
 
 ## Sicherheit, kurz zusammengefasst
 
-Der Skill konfiguriert den zugrundeliegenden Mail-Server standardmäßig **ohne** Versand-Zugangsdaten (SMTP) — Senden ist dadurch nicht nur verboten, sondern technisch unmöglich, unabhängig davon, was Claude tut. Zusätzlich ist Claude bei jedem automatischen Lauf auf lesen/verschieben/markieren beschränkt. Details: Abschnitt 0 in `skills/setup/SKILL.md`. Bekannte Grenzen: [SECURITY.md](SECURITY.md).
+Der Skill konfiguriert den zugrundeliegenden Mail-Server standardmäßig **ohne** Versand-Zugangsdaten (SMTP) — Senden ist dadurch nicht nur verboten, sondern technisch unmöglich, unabhängig davon, was Claude tut. Zusätzlich läuft Claude bei jedem automatischen Lauf ohne eingebaute Werkzeuge, nur mit dem Mail-Server und nur mit lesen/verschieben/markieren (alles andere ist ausdrücklich gesperrt). Passwörter trägst du selbst in deinem Terminal ein, nie im Chat. Details: Abschnitt 0 in `skills/setup/SKILL.md`. Bekannte Grenzen: [SECURITY.md](SECURITY.md).
 
 ## Bereits live getestet
 
 **Der Sortier-Algorithmus selbst** (Regelwerk, Loop und Prompt-Aufbau, auf denen dieser Skill basiert) läuft bereits seit mehreren Wochen im täglichen Einsatz auf echten Postfächern (GMX und Gmail) und ist dort entsprechend lange erprobt.
 
-**Der Setup-Skill** (die geführte Einrichtung in diesem Repository) wurde dagegen am 2026-09-28 gegen ein echtes Gmail-Konto validiert (Docker-Pfad): Erstlauf-Erkennung, Domain-basierte Klassifizierung, Login-Ausnahmen, die Rückfrage-Runde nach unsortierten Mails — alles wie vorgesehen. Dieses Datum gilt nur für den Test des Setup-Skills, nicht für den Algorithmus. Der lokale Pfad (ohne Docker) ist bisher nur nach Dokumentationslage gebaut, noch nicht real durchgespielt.
+**Der Setup-Skill** (die geführte Einrichtung in diesem Repository) wurde dagegen am 2026-09-28 gegen ein echtes Gmail-Konto validiert (Docker-Pfad): Erstlauf-Erkennung, Domain-basierte Klassifizierung, Login-Ausnahmen, die Rückfrage-Runde nach unsortierten Mails — alles wie vorgesehen. Dieses Datum gilt nur für den Test des Setup-Skills, nicht für den Algorithmus. **Seit Version 1.1.0** wurde der Loop deutlich überarbeitet (gehärteter `claude`-Aufruf, Paging, Lock, Zeitlimit); der Docker-Pfad muss damit erneut gegen ein echtes Konto validiert werden. Der lokale Pfad (ohne Docker) ist bisher nur nach Dokumentationslage gebaut, noch nicht real durchgespielt.
 
 ---
 
@@ -128,10 +128,10 @@ Claude then walks you through an interview (email accounts, IMAP credentials, ta
 
 ## Security in short
 
-By default the skill configures the underlying mail server **without** sending credentials (SMTP) — sending is therefore not just forbidden but technically impossible, regardless of what Claude does. In addition, Claude is restricted to reading/moving/tagging on every automatic run. Details: section 0 in `skills/setup/SKILL.md`. Known limits: [SECURITY.md](SECURITY.md#english).
+By default the skill configures the underlying mail server **without** sending credentials (SMTP) — sending is therefore not just forbidden but technically impossible, regardless of what Claude does. In addition, every automatic run starts Claude without built-in tools, with only the mail server, and restricted to reading/moving/tagging (everything else is explicitly denied). You enter passwords yourself in your own terminal, never in the chat. Details: section 0 in `skills/setup/SKILL.md`. Known limits: [SECURITY.md](SECURITY.md#english).
 
 ## Already tested live
 
 **The sorting algorithm itself** (rule set, loop and prompt structure that this skill is based on) has been in daily use on real mailboxes (GMX and Gmail) for several weeks and is correspondingly well proven.
 
-**The setup skill** (the guided setup in this repository), on the other hand, was validated on 2026-09-28 against a real Gmail account (Docker path): first-run detection, domain-based classification, login exceptions, the follow-up round for unsorted mails — all as intended. This date applies only to the test of the setup skill, not to the algorithm. The local path (without Docker) has so far only been built from documentation and not yet run for real.
+**The setup skill** (the guided setup in this repository), on the other hand, was validated on 2026-09-28 against a real Gmail account (Docker path): first-run detection, domain-based classification, login exceptions, the follow-up round for unsorted mails — all as intended. This date applies only to the test of the setup skill, not to the algorithm. **Since version 1.1.0** the loop has been substantially reworked (hardened `claude` invocation, paging, lock, timeout); the Docker path has to be validated again against a real account. The local path (without Docker) has so far only been built from documentation and not yet run for real.

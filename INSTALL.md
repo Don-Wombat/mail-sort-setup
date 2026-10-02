@@ -15,6 +15,8 @@ claude plugin marketplace add Don-Wombat/mail-sort-setup
 claude plugin install mail-sort-setup@mail-sort-setup
 ```
 
+Voraussetzung: eine aktuelle Claude-Code-Version (der Loop nutzt `--permission-mode dontAsk`, `--tools` und `--strict-mcp-config`; der Skill prüft das in Phase 0).
+
 Falls der Skill nicht sofort auftaucht: in Claude Code `/reload-plugins`
 eingeben oder neu starten.
 
@@ -41,4 +43,4 @@ Der Sortier-Algorithmus selbst läuft seit mehreren Wochen im täglichen
 Einsatz (GMX und Gmail). Der Setup-Skill wurde am 2026-09-28 gegen ein
 echtes Gmail-Konto validiert (Docker-Pfad); dieses Datum gilt nur für den
 Setup-Skill. Der lokale Pfad (ohne Docker) ist bisher nur nach
-Dokumentationslage gebaut, noch nicht real durchgespielt.
+Dokumentationslage gebaut, noch nicht real durchgespielt. Seit Version 1.1.0 wurde der Loop überarbeitet; der Docker-Pfad muss erneut validiert werden.
