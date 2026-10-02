@@ -10,7 +10,12 @@
   Form (alle IDs unter `succeeded:`, kein `failed:`/`unknown:`).
 - SKILL.md: neuer Fallstrick und Hinweis im Testlauf (Phase 6).
 - Docker-Pfad gegen ein echtes Gmail-Konto neu validiert (Container-Snippet,
-  HTTP-Transport, gehärteter Loop, Vollauf, Marke, Watermark).
+  HTTP-Transport, gehärteter Loop, Vollauf, Marke, Watermark). Zusätzlich mit
+  einem frischen Test-Konto und neu gestartetem `mail-mcp-sort`-Container
+  (Version 1.11.0, `user: 1000:1000`, Config 600): Host-Prüfung (421 bei
+  falschem Host), Vollauf und Folgelauf mit `since`, Abschlussmarke, Watermark,
+  Gmail-`reconciliation needed` korrekt akzeptiert, Fehlerfall (Server ohne
+  Netz) liefert keine Marke und lässt den Watermark stehen.
 - Windows-Pfad auf einem echten Windows-Runner (GitHub Actions) geprüft:
   Windows PowerShell 5.1 und PowerShell 7, kompilierter `claude.exe`-Stub,
   `.cmd`-Shim, Timeout/Tree-Kill, Registrierung in der Aufgabenplanung. Keine
