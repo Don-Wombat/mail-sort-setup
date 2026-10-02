@@ -135,6 +135,15 @@ claude --help | grep -E -c 'dontAsk|--strict-mcp-config|--tools'   # sollte mind
   sind **nicht** nötig. (Wer Claude Code ohnehin in WSL betreibt, nutzt
   dort den normalen Linux-Pfad.)
 
+  **Firmenrechner oder geschäftliches Claude?** Dann zuerst
+  `templates/windows/diagnose-windows.ps1` ausführen lassen
+  (`powershell -NoProfile -ExecutionPolicy Bypass -File .\diagnose-windows.ps1 -All`,
+  als normaler Nutzer). Es prüft nur lesend Ausführungsrichtlinie, AppLocker/WDAC,
+  verwaltete Claude-Einstellungen (`managed-mcp.json`, `allowedMcpServers`) und
+  TLS-Inspection und macht mit `-All` drei kleine Praxistests. Bei `FAIL`
+  die Einrichtung nicht weitertreiben, sondern mit dem Nutzer klären, was die
+  IT freigeben muss (siehe README, Abschnitt „Auf Firmenrechnern“).
+
 Falls beides unklar bleibt: **fragen, nicht raten.** Voraussetzung laut
 diesem Skill ist eines von beidem — ohne eine Form von Persistenz
 (Container-Neustart-Schleife oder OS-Scheduler) kann kein verlässlicher
@@ -699,4 +708,5 @@ templates/
   crontab-example.txt              # lokaler Pfad, klassisches Cron
   windows/mail-sort-loop.ps1       # lokaler Pfad, Windows (PowerShell 5.1/7)
   windows/register-mail-sort-task.ps1  # lokaler Pfad, Windows-Aufgabenplanung
+  windows/diagnose-windows.ps1     # Vorab-Diagnose für Firmenrechner (nur lesend, optionale Praxistests)
 ```

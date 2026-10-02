@@ -34,8 +34,15 @@
   nur Gmail ist per Skill getestet.
 - README (DE/EN): neuer Abschnitt zu Firmenrechnern und geschäftlichem Claude
   (IT-Freigabe, Datenschutz, Microsoft 365, AppLocker/WDAC, TLS-Inspection,
-  Ausführungsrichtlinie, verwaltete Claude-Code-Einstellungen); ausdrücklich
-  als ungetestet gekennzeichnet.
+  Ausführungsrichtlinie, verwaltete Claude-Code-Einstellungen).
+- Neu: `templates/windows/diagnose-windows.ps1`, ein Diagnose-Skript für
+  Firmenrechner. Prüft vor der Einrichtung (nur lesend, ohne Adminrechte)
+  Ausführungsrichtlinie, Language Mode, AppLocker/WDAC, Werkzeuge, verwaltete
+  Claude-Code-Einstellungen und TLS-Aussteller; mit `-TaskTest`, `-UvTest`,
+  `-ClaudeTest` (oder `-All`) zusätzlich Praxistests. Auf einer
+  Windows-11-VM geprüft, auch das Nachstellen von `managed-mcp.json` (Abbruch
+  mit „enterprise MCP config“) und `allowedMcpServers` (Warnung „MCP server
+  blocked by enterprise policy“, Exit 0, aber ohne Mail-Werkzeuge).
 
 ## 1.2.0
 
