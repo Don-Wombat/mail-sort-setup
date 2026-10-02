@@ -524,7 +524,9 @@ Aktivieren des automatischen Zeitplans:
    der Tool-Aufrufe — den Nachweis liefert also die Sperre selbst, nicht
    das Log. Meldet das Log am Ende die Abschlussmarke `MAIL_SORT_LAUF_OK`,
    ist der Lauf vollständig durchgelaufen; fehlt sie, wurde der Watermark
-   bewusst nicht fortgeschrieben.
+   bewusst nicht fortgeschrieben. Fehlt sie, obwohl die Mails sichtbar
+   verschoben wurden, steht im Log meist `warning: reconciliation needed`
+   (siehe Fallstricke) — dann Prompt-Absatz „Abschlusszeile“ prüfen.
 4. **Nur falls ein Tag (z. B. `handlungsbedarf`) konfiguriert ist:** das
    Tag an einer harmlosen Test-Mail setzen (`set_email_tags`) und mit
    `list_emails_metadata(semantic_tags=["handlungsbedarf"])` zurücklesen;
@@ -607,6 +609,15 @@ Kurze, für Laien verständliche Zusammenfassung, keine Wall of Text:
   MCP-Server bietet kein Copy-Werkzeug — eine verschobene Mail ist im
   Ursprungsordner weg. Das ist der Grund, warum zeitkritische Mails
   (Phase 1.2) markiert statt verschoben werden.
+- **`warning: reconciliation needed` bei Gmail.** `move_emails` antwortet bei
+  Gmail auch nach geglückter Verschiebung nicht mit „Successfully …“,
+  sondern mit `Move result [succeeded: <IDs>; warning: reconciliation
+  needed]` (mcp-email-server 1.11.0, Gmail-Live-Test 2026-10-02). Die
+  Abschlusszeilen-Regel der Prompt-Vorlage akzeptiert diese Form, solange
+  alle IDs unter `succeeded:` stehen und es kein `failed:`/`unknown:` gibt.
+  Eine Prompt-Datei mit der alten, strengeren Regel („nur Successfully“)
+  gibt bei Gmail nie die Marke aus: der Watermark bleibt stehen und jeder
+  Lauf scannt den ganzen Posteingang.
 - **Nutzungslimits bei sehr aktiven Konten:** Ein headless `claude -p`-Lauf
   kann an ein Anthropic-Nutzungslimit stoßen; er bricht dann ohne
   Abschlussmarke ab (Watermark bleibt stehen), und der nächste Versuch

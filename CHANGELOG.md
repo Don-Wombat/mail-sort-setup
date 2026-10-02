@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.2.1
+
+- Fix (Gmail, per Live-Test gefunden): `move_emails` antwortet bei Gmail auch
+  nach geglückter Verschiebung mit `Move result [succeeded: …; warning:
+  reconciliation needed]` statt „Successfully …“. Die strenge
+  Abschlusszeilen-Regel der Prompt-Vorlage hat deshalb nie `MAIL_SORT_LAUF_OK`
+  ausgegeben, der Watermark blieb stehen. Die Regel akzeptiert jetzt diese
+  Form (alle IDs unter `succeeded:`, kein `failed:`/`unknown:`).
+- SKILL.md: neuer Fallstrick und Hinweis im Testlauf (Phase 6).
+- Docker-Pfad gegen ein echtes Gmail-Konto neu validiert (Container-Snippet,
+  HTTP-Transport, gehärteter Loop, Vollauf, Marke, Watermark).
+
 ## 1.2.0
 
 - Windows nativ: `templates/windows/mail-sort-loop.ps1` (PowerShell 5.1/7,
