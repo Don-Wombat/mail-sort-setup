@@ -70,15 +70,23 @@ Der Skill konfiguriert den zugrundeliegenden Mail-Server standardmäßig **ohne*
 
 Wenn dein Arbeitgeber Einstellungen für Rechner oder für Claude Code vorgibt, kann das die Einrichtung ausbremsen. **Stand: nur teilweise getestet.** Der Skill wurde auf privaten Rechnern und einer Windows-VM geprüft, noch nicht auf einem echten Firmenrechner. Auf der VM wurde nachgestellt, wie `managed-mcp.json` und `allowedMcpServers` den Lauf blockieren (siehe unten). AppLocker, WDAC, TLS-Inspection und Domänen-Gruppenrichtlinien stammen dagegen aus der Dokumentation von Microsoft und Anthropic, nicht aus eigenen Tests.
 
-**Vorab selbst prüfen (Windows):** Das Diagnose-Skript [`diagnose-windows.ps1`](skills/setup/templates/windows/diagnose-windows.ps1) prüft vor der Einrichtung, ob der Rechner mitspielt. Ohne Schalter liest es nur (keine Installation, keine Änderung, keine Adminrechte nötig) und zeigt Richtlinien, Werkzeuge, verwaltete Claude-Einstellungen und die TLS-Zertifikate. Mit `-All` macht es zusätzlich drei kleine Praxistests: eine Testaufgabe in der Aufgabenplanung (wird sofort wieder entfernt), `uvx mcp-email-server` und einen `claude -p`-Aufruf mit denselben Schutz-Schaltern wie der echte Lauf (ein winziger API-Aufruf, kein Mail-Zugriff). Am besten als normaler Nutzer starten, nicht als Admin:
+**Vorab selbst prüfen (Windows):** Das Diagnose-Skript [`diagnose-windows.ps1`](skills/setup/templates/windows/diagnose-windows.ps1) prüft vor der Einrichtung, ob der Rechner mitspielt. Ohne Schalter liest es nur (keine Installation, keine Änderung, keine Adminrechte nötig) und zeigt Richtlinien, Werkzeuge, verwaltete Claude-Einstellungen und die TLS-Zertifikate. Mit `-All` macht es zusätzlich drei kleine Praxistests: eine Testaufgabe in der Aufgabenplanung (wird sofort wieder entfernt), `uvx mcp-email-server` und einen `claude -p`-Aufruf mit denselben Schutz-Schaltern wie der echte Lauf (ein winziger API-Aufruf, kein Mail-Zugriff). Am besten als normaler Nutzer starten, nicht als Admin. Zwei Varianten:
 
 ```powershell
+# nur lesen (ohne -All): auch auf Rechnern ohne claude sinnvoll
+powershell -NoProfile -ExecutionPolicy Bypass -File .\diagnose-windows.ps1
+
+# mit Praxistests (-All): Aufgabenplanung, uvx und claude -p; claude muss installiert und angemeldet sein
 powershell -NoProfile -ExecutionPolicy Bypass -File .\diagnose-windows.ps1 -All
 ```
 
-Meldet Windows „Die Ausführung von Skripts ist auf diesem System deaktiviert“, wurde die Datei direkt (`.\diagnose-windows.ps1`) gestartet: Das blockiert die Standard-Richtlinie `Restricted`. Der Aufruf oben mit `-ExecutionPolicy Bypass` umgeht sie, ohne etwas dauerhaft zu ändern. Greift auch das nicht (Gruppenrichtlinie legt die Richtlinie fest), lässt sich der Skriptinhalt trotzdem ohne Dateistart ausführen, solange PowerShell im Modus `FullLanguage` läuft:
+Meldet Windows „Die Ausführung von Skripts ist auf diesem System deaktiviert“, wurde die Datei direkt (`.\diagnose-windows.ps1`) gestartet: Das blockiert die Standard-Richtlinie `Restricted`. Die Aufrufe oben mit `-ExecutionPolicy Bypass` umgehen sie, ohne etwas dauerhaft zu ändern. Greift auch das nicht (Gruppenrichtlinie legt die Richtlinie fest), lässt sich der Skriptinhalt trotzdem ohne Dateistart ausführen, solange PowerShell im Modus `FullLanguage` läuft:
 
 ```powershell
+# nur lesen
+& ([scriptblock]::Create((Get-Content .\diagnose-windows.ps1 -Raw)))
+
+# mit Praxistests
 & ([scriptblock]::Create((Get-Content .\diagnose-windows.ps1 -Raw))) -All
 ```
 
@@ -185,15 +193,23 @@ By default the skill configures the underlying mail server **without** sending c
 
 If your employer enforces settings on machines or on Claude Code, setup may get blocked. **Status: only partly tested.** The skill was checked on private machines and on a Windows VM, not yet on a real company machine. On the VM we reproduced how `managed-mcp.json` and `allowedMcpServers` block the run (see below). AppLocker, WDAC, TLS inspection and domain Group Policies come from Microsoft's and Anthropic's documentation, not from our own tests.
 
-**Check it yourself first (Windows):** the diagnostic script [`diagnose-windows.ps1`](skills/setup/templates/windows/diagnose-windows.ps1) checks before setup whether the machine will cooperate. Without switches it only reads (no installation, no changes, no admin rights needed) and shows policies, tools, managed Claude settings and the TLS certificates. With `-All` it also runs three small live tests: a test task in Task Scheduler (removed immediately), `uvx mcp-email-server` and a `claude -p` call with the same safety switches as the real run (one tiny API call, no mail access). Best started as a normal user, not as admin:
+**Check it yourself first (Windows):** the diagnostic script [`diagnose-windows.ps1`](skills/setup/templates/windows/diagnose-windows.ps1) checks before setup whether the machine will cooperate. Without switches it only reads (no installation, no changes, no admin rights needed) and shows policies, tools, managed Claude settings and the TLS certificates. With `-All` it also runs three small live tests: a test task in Task Scheduler (removed immediately), `uvx mcp-email-server` and a `claude -p` call with the same safety switches as the real run (one tiny API call, no mail access). Best started as a normal user, not as admin. Two variants:
 
 ```powershell
+# read only (no -All): also useful on machines without claude
+powershell -NoProfile -ExecutionPolicy Bypass -File .\diagnose-windows.ps1
+
+# with live tests (-All): Task Scheduler, uvx and claude -p; claude must be installed and logged in
 powershell -NoProfile -ExecutionPolicy Bypass -File .\diagnose-windows.ps1 -All
 ```
 
-If Windows says "running scripts is disabled on this system", the file was started directly (`.\diagnose-windows.ps1`), which the default `Restricted` policy blocks. The command above with `-ExecutionPolicy Bypass` avoids that without changing anything permanently. If that does not help either (a Group Policy fixes the execution policy), the script content can still be run without starting a file, as long as PowerShell is in `FullLanguage` mode:
+If Windows says "running scripts is disabled on this system", the file was started directly (`.\diagnose-windows.ps1`), which the default `Restricted` policy blocks. The commands above with `-ExecutionPolicy Bypass` avoid that without changing anything permanently. If that does not help either (a Group Policy fixes the execution policy), the script content can still be run without starting a file, as long as PowerShell is in `FullLanguage` mode:
 
 ```powershell
+# read only
+& ([scriptblock]::Create((Get-Content .\diagnose-windows.ps1 -Raw)))
+
+# with live tests
 & ([scriptblock]::Create((Get-Content .\diagnose-windows.ps1 -Raw))) -All
 ```
 
