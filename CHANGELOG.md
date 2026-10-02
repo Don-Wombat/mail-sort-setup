@@ -14,7 +14,9 @@
 - Windows-Pfad auf einem echten Windows-Runner (GitHub Actions) geprüft:
   Windows PowerShell 5.1 und PowerShell 7, kompilierter `claude.exe`-Stub,
   `.cmd`-Shim, Timeout/Tree-Kill, Registrierung in der Aufgabenplanung. Keine
-  Skriptänderung nötig.
+  Skriptänderung nötig. Zusätzlich auf einer echten Windows-11-VM
+  (deutsch, PS 5.1) mit dem echten `claude.exe` 2.1.286 und einem echten
+  Aufgabenplanung-Start geprüft (leere MCP-Konfiguration, kein Mail-Konto).
 
 ## 1.2.0
 
