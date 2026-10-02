@@ -70,7 +70,6 @@ MAIL_SORT_DONE_MARKER="MAIL_SORT_LAUF_OK"
 
 LOCK_DIR="$SCRIPT_DIR/.mail-sort.lock"
 LOCK_HELD=0
-PROMPT_TMP=""
 
 ts_utc() { date -u +%Y-%m-%dT%H:%M:%SZ; }
 
@@ -79,16 +78,28 @@ fmt_epoch() {
   date -u -d "@$1" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -r "$1" +%Y-%m-%dT%H:%M:%SZ
 }
 
+# Verwaist, wenn der Besitzer nicht mehr laeuft, die PID die eigene ist
+# (PID-Wiederverwendung nach Neustart) oder das Lock aelter ist als ein
+# Lauf maximal dauern kann (PID inzwischen an fremden Prozess vergeben).
+lock_is_stale() {
+  local pid max_min
+  pid="$(cat "$LOCK_DIR/pid" 2>/dev/null)"
+  if [ -z "$pid" ]; then
+    # Gerade erst angelegt (PID noch nicht geschrieben) oder kaputt.
+    [ -n "$(find "$LOCK_DIR" -maxdepth 0 -mmin +1 2>/dev/null)" ]
+    return
+  fi
+  [ "$pid" = "$$" ] && return 0
+  kill -0 "$pid" 2>/dev/null || return 0
+  max_min=$(( (MAIL_SORT_RUN_TIMEOUT_SECONDS + 600) / 60 ))
+  [ -n "$(find "$LOCK_DIR" -maxdepth 0 -mmin +"$max_min" 2>/dev/null)" ]
+}
+
 acquire_lock() {
   if mkdir "$LOCK_DIR" 2>/dev/null; then
     echo $$ > "$LOCK_DIR/pid"; LOCK_HELD=1; return 0
   fi
-  local pid
-  pid="$(cat "$LOCK_DIR/pid" 2>/dev/null)"
-  if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
-    return 1
-  fi
-  # Verwaistes Lock (Prozess existiert nicht mehr) uebernehmen.
+  lock_is_stale || return 1
   rm -rf "$LOCK_DIR"
   if mkdir "$LOCK_DIR" 2>/dev/null; then
     echo $$ > "$LOCK_DIR/pid"; LOCK_HELD=1; return 0
@@ -99,15 +110,14 @@ acquire_lock() {
 cleanup() {
   [ "$LOCK_HELD" -eq 1 ] && rm -rf "$LOCK_DIR"
   LOCK_HELD=0
-  [ -n "$PROMPT_TMP" ] && rm -f "$PROMPT_TMP"
-  PROMPT_TMP=""
 }
 trap cleanup EXIT
 trap 'exit 130' INT TERM
 
 rotate_log() {
   local size
-  size="$(wc -c < "$MAIL_SORT_LOG_FILE" 2>/dev/null | tr -d ' ')"
+  [ -f "$MAIL_SORT_LOG_FILE" ] || return 0
+  size="$(wc -c < "$MAIL_SORT_LOG_FILE" | tr -d ' ')"
   if [ "${size:-0}" -gt "$MAIL_SORT_LOG_MAX_BYTES" ]; then
     mv -f "$MAIL_SORT_LOG_FILE" "$MAIL_SORT_LOG_FILE.1"
   fi
@@ -120,29 +130,32 @@ elif command -v gtimeout >/dev/null 2>&1; then
   TIMEOUT_CMD=(gtimeout --kill-after=60 "$MAIL_SORT_RUN_TIMEOUT_SECONDS")
 fi
 
-# Ausgabe: Prompt fuer diesen Lauf auf stdout. $1 = run_start (ISO), $2 = full (0/1)
-build_prompt() {
-  local run_start="$1" full="$2" since_ts="" watermark=""
-  cat "$MAIL_SORT_PROMPT_FILE"
-  if [ "$full" -eq 0 ] && [ -s "$MAIL_SORT_STATE_FILE" ]; then
-    watermark="$(tr -d '[:space:]' < "$MAIL_SORT_STATE_FILE")"
-    if printf '%s' "$watermark" | grep -Eq '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:]{8}Z$'; then
-      since_ts="$watermark"
-    else
-      echo "[mail-sort] WARNUNG: Watermark-Datei hat ungueltigen Inhalt, behandle den Lauf als Erstlauf." >&2
-    fi
+# Gueltiger Watermark auf stdout, sonst nichts (ungueltig: Warnung auf stderr).
+read_watermark() {
+  local w
+  [ -s "$MAIL_SORT_STATE_FILE" ] || return 0
+  w="$(tr -d '[:space:]' < "$MAIL_SORT_STATE_FILE")"
+  if printf '%s' "$w" | grep -Eq '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:]{8}Z$'; then
+    printf '%s' "$w"
+  elif [ -n "$w" ]; then
+    echo "[mail-sort] WARNUNG: Watermark-Datei hat ungueltigen Inhalt, behandle den Lauf als Erstlauf." >&2
   fi
-  if [ -n "$since_ts" ]; then
-    printf '\n\nHinweis: Dies ist KEIN Erstlauf. Zeitfenster dieses Laufs (UTC): since="%s" und before="%s".\nÜbergib beide Werte als since- bzw. before-Parameter an list_emails_metadata.\n' "$since_ts" "$run_start"
-  elif [ "$full" -eq 0 ] && [ -n "$MAIL_SORT_FIRST_RUN_SINCE" ] && [ -z "$watermark" ]; then
-    printf '\n\nHinweis: Dies ist der Erstlauf, begrenzt auf einen Zeitraum. Zeitfenster dieses Laufs: since="%s" und before="%s".\nÜbergib beide Werte als since- bzw. before-Parameter an list_emails_metadata.\n' "$MAIL_SORT_FIRST_RUN_SINCE" "$run_start"
+}
+
+# Prompt fuer diesen Lauf auf stdout. $1 = run_start, $2 = since (leer = Erstlauf/Vollauf), $3 = first_since
+build_prompt() {
+  cat "$MAIL_SORT_PROMPT_FILE"
+  if [ -n "$2" ]; then
+    printf '\n\nHinweis: Dies ist KEIN Erstlauf. Zeitfenster dieses Laufs (UTC): since="%s" und before="%s".\nÜbergib beide Werte als since- bzw. before-Parameter an list_emails_metadata.\n' "$2" "$1"
+  elif [ -n "$3" ]; then
+    printf '\n\nHinweis: Dies ist der Erstlauf, begrenzt auf einen Zeitraum. Zeitfenster dieses Laufs: since="%s" und before="%s".\nÜbergib beide Werte als since- bzw. before-Parameter an list_emails_metadata.\n' "$3" "$1"
   else
-    printf '\n\nHinweis: Dies ist der Erstlauf bzw. ein Vollauf (kein since-Zeitstempel). Prüfe den kompletten aktuellen Bestand in INBOX.\nZeitfenster dieses Laufs (UTC): nur before="%s" (als before-Parameter an list_emails_metadata übergeben).\n' "$run_start"
+    printf '\n\nHinweis: Dies ist der Erstlauf bzw. ein Vollauf (kein since-Zeitstempel). Prüfe den kompletten aktuellen Bestand in INBOX.\nZeitfenster dieses Laufs (UTC): nur before="%s" (als before-Parameter an list_emails_metadata übergeben).\n' "$1"
   fi
 }
 
 run_once() {
-  local full="$1" run_start start_epoch output rc last_line mode
+  local full="$1" run_start start_epoch output rc last_line mode since="" first_since=""
 
   if [ ! -f "$MAIL_SORT_PROMPT_FILE" ]; then
     echo "[mail-sort] $(ts_utc) FEHLER: Prompt-Datei $MAIL_SORT_PROMPT_FILE fehlt."
@@ -159,21 +172,24 @@ run_once() {
 
   start_epoch="$(date +%s)"
   run_start="$(fmt_epoch "$start_epoch")"
-  PROMPT_TMP="$(mktemp "$SCRIPT_DIR/.prompt.XXXXXX")" || return 1
-  build_prompt "$run_start" "$full" > "$PROMPT_TMP"
-  if grep -q "KEIN Erstlauf" "$PROMPT_TMP"; then mode="since $(tr -d '[:space:]' < "$MAIL_SORT_STATE_FILE")"; else mode="Erstlauf/Vollauf"; fi
+  if [ "$full" -eq 0 ]; then
+    since="$(read_watermark)"
+    if [ -z "$since" ] && [ ! -s "$MAIL_SORT_STATE_FILE" ]; then first_since="$MAIL_SORT_FIRST_RUN_SINCE"; fi
+  fi
+  if [ -n "$since" ]; then mode="since $since"; else mode="Erstlauf/Vollauf"; fi
   echo "[mail-sort] $run_start Starte Sortierlauf ($mode, via $CLAUDE_BIN)..."
   if [ "${#TIMEOUT_CMD[@]}" -eq 0 ]; then
     echo "[mail-sort] Hinweis: weder timeout noch gtimeout gefunden, Lauf ohne Zeitlimit."
   fi
 
-  output="$(${TIMEOUT_CMD[@]+"${TIMEOUT_CMD[@]}"} "$CLAUDE_BIN" -p \
-    --permission-mode dontAsk \
-    --tools "" \
-    --strict-mcp-config --mcp-config "$MAIL_SORT_MCP_CONFIG" \
-    --allowedTools "${MAIL_SORT_ALLOWED_TOOLS[@]}" \
-    --disallowedTools "${MAIL_SORT_DISALLOWED_TOOLS[@]}" \
-    < "$PROMPT_TMP" 2>&1)"
+  # Nur stdout wird ausgewertet; stderr geht direkt ins Log (Aufrufer leitet 2>&1 um).
+  output="$(build_prompt "$run_start" "$since" "$first_since" \
+    | ${TIMEOUT_CMD[@]+"${TIMEOUT_CMD[@]}"} "$CLAUDE_BIN" -p \
+      --permission-mode dontAsk \
+      --tools "" \
+      --strict-mcp-config --mcp-config "$MAIL_SORT_MCP_CONFIG" \
+      --allowedTools "${MAIL_SORT_ALLOWED_TOOLS[@]}" \
+      --disallowedTools "${MAIL_SORT_DISALLOWED_TOOLS[@]}")"
   rc=$?
   printf '%s\n' "$output"
 

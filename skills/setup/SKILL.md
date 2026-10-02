@@ -423,7 +423,7 @@ Im Projektordner aus Phase 1b (neben `mail-mcp.json`):
 | `mail-sort-loop.sh` | aus `templates/mail-sort-loop.sh`, mit den Werten aus Phase 1/5 befüllt — **unter Windows stattdessen** `mail-sort-loop.ps1` aus `templates/windows/mail-sort-loop.ps1` (gleiche Variablen, gleiches Verhalten) |
 | `mail-sort-prompt.txt` | aus Phase 3 |
 | `mail-sort-last-run.txt` | leer anlegen — Watermark, wird vom Loop selbst befüllt |
-| `mail-sort.log` | leer anlegen |
+| `mail-sort.log` | **nicht** vorab anlegen — der Loop legt es beim ersten Lauf selbst mit restriktiven Rechten an (`umask 077`) |
 | `README.md` | für den Menschen, siehe unten |
 
 `README.md` muss in einfachen Worten enthalten:

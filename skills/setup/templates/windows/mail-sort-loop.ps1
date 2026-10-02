@@ -79,9 +79,27 @@ function Write-Log([string]$text) {
 }
 
 function Invoke-LogRotation {
-  if ((Test-Path -LiteralPath $MailSortLogFile) -and ((Get-Item -LiteralPath $MailSortLogFile).Length -gt $MailSortLogMaxBytes)) {
-    Move-Item -LiteralPath $MailSortLogFile -Destination "$MailSortLogFile.1" -Force
+  try {
+    if ((Test-Path -LiteralPath $MailSortLogFile) -and ((Get-Item -LiteralPath $MailSortLogFile).Length -gt $MailSortLogMaxBytes)) {
+      Move-Item -LiteralPath $MailSortLogFile -Destination "$MailSortLogFile.1" -Force
+    }
+  } catch {
+    # z.B. Log gerade von einem anderen Programm geoeffnet: Lauf trotzdem ausfuehren.
+    try { Write-Log "[mail-sort] WARNUNG: Log-Rotation fehlgeschlagen: $($_.Exception.Message)" } catch { }
   }
+}
+
+# Verwaist, wenn der Besitzer nicht mehr laeuft, die PID die eigene ist oder
+# das Lock aelter ist als ein Lauf maximal dauern kann (PID inzwischen an
+# einen fremden Prozess vergeben, z.B. nach Abbruch durch die Aufgabenplanung).
+function Test-LockStale {
+  $age = (Get-Date) - [System.IO.Directory]::GetLastWriteTime($LockDir)
+  $ownerPid = 0
+  try { $ownerPid = [int]([System.IO.File]::ReadAllText((Join-Path $LockDir 'pid')).Trim()) } catch { }
+  if ($ownerPid -le 0) { return ($age.TotalSeconds -gt 60) }
+  if ($ownerPid -eq $PID) { return $true }
+  if (-not (Get-Process -Id $ownerPid -ErrorAction SilentlyContinue)) { return $true }
+  return ($age.TotalSeconds -gt ($MailSortRunTimeoutSeconds + 600))
 }
 
 function Enter-Lock {
@@ -92,10 +110,7 @@ function Enter-Lock {
       $script:LockHeld = $true
       return $true
     } catch {
-      $ownerPid = 0
-      try { $ownerPid = [int]([System.IO.File]::ReadAllText((Join-Path $LockDir 'pid')).Trim()) } catch { }
-      if ($ownerPid -gt 0 -and (Get-Process -Id $ownerPid -ErrorAction SilentlyContinue)) { return $false }
-      # Verwaistes Lock (Prozess existiert nicht mehr) entfernen und erneut versuchen.
+      if (-not (Test-LockStale)) { return $false }
       Remove-Item -LiteralPath $LockDir -Recurse -Force -ErrorAction SilentlyContinue
     }
   }
@@ -129,10 +144,10 @@ function Stop-ProcessTree([System.Diagnostics.Process]$p) {
   }
 }
 
-# Startet claude mit Prompt auf stdin. Rueckgabe: @{ Code; Output }
+# Startet claude mit Prompt auf stdin. Rueckgabe: @{ Code; Output (stdout); Err (stderr) }
 function Invoke-Claude([string]$prompt, [string[]]$claudeArgs) {
   $cmd = Get-Command $ClaudeBin -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
-  if (-not $cmd) { return @{ Code = 127; Output = "FEHLER: '$ClaudeBin' nicht gefunden (PATH pruefen)." } }
+  if (-not $cmd) { return @{ Code = 127; Output = ''; Err = "FEHLER: '$ClaudeBin' nicht gefunden (PATH pruefen)." } }
   $argString = ($claudeArgs | ForEach-Object { ConvertTo-WinArg $_ }) -join ' '
   $psi = New-Object System.Diagnostics.ProcessStartInfo
   $ext = [System.IO.Path]::GetExtension($cmd.Source).ToLowerInvariant()
@@ -160,8 +175,8 @@ function Invoke-Claude([string]$prompt, [string[]]$claudeArgs) {
   try {
     $p.StandardInput.BaseStream.Write($bytes, 0, $bytes.Length)
     $p.StandardInput.BaseStream.Flush()
+    $p.StandardInput.Close()
   } catch { }
-  $p.StandardInput.Close()
 
   if (-not $p.WaitForExit($MailSortRunTimeoutSeconds * 1000)) {
     Stop-ProcessTree $p
@@ -173,10 +188,10 @@ function Invoke-Claude([string]$prompt, [string[]]$claudeArgs) {
   }
   [void]$outTask.Wait(30000)
   [void]$errTask.Wait(30000)
-  $out = ''
-  if ($outTask.IsCompleted) { $out += $outTask.Result }
-  if ($errTask.IsCompleted) { $out += $errTask.Result }
-  return @{ Code = $code; Output = $out.TrimEnd() }
+  $out = ''; $err = ''
+  if ($outTask.IsCompleted) { $out = $outTask.Result }
+  if ($errTask.IsCompleted) { $err = $errTask.Result }
+  return @{ Code = $code; Output = $out.TrimEnd(); Err = $err.TrimEnd() }
 }
 
 function Invoke-SortRun([bool]$full) {
@@ -222,12 +237,13 @@ function Invoke-SortRun([bool]$full) {
   $claudeArgs = @('-p', '--permission-mode', 'dontAsk', '--tools', '', '--strict-mcp-config', '--mcp-config', $MailSortMcpConfig, '--allowedTools') + $MailSortAllowedTools + @('--disallowedTools') + $MailSortDisallowedTools
   $r = Invoke-Claude ($promptBody + $hint) $claudeArgs
   if ($r.Output) { Write-Log $r.Output }
+  if ($r.Err) { Write-Log $r.Err }
 
   if ($r.Code -eq 124) {
     Write-Log "[mail-sort] $(Get-UtcStamp (Get-Date)) Timeout nach ${MailSortRunTimeoutSeconds}s, Watermark NICHT aktualisiert."
     return 1
   }
-  # Nur die letzte nicht-leere Zeile zaehlt (CR, Leerzeichen, Markdown-Zeichen ignoriert).
+  # Nur die letzte nicht-leere stdout-Zeile zaehlt (CR, Leerzeichen, Markdown-Zeichen ignoriert).
   $lines = @($r.Output -split "`n" | ForEach-Object { $_ -replace '[\s\*`]', '' } | Where-Object { $_ -ne '' })
   $last = if ($lines.Count -gt 0) { $lines[-1] } else { '' }
   if ($r.Code -eq 0 -and $last -ceq $MailSortDoneMarker) {

@@ -12,6 +12,14 @@
   (`icacls`), Passwort-Prüfung, uv-Installation, Zeitplan und Testlauf.
 - Hinweis: Der Windows-Pfad ist mit PowerShell 7 gegen einen Test-Stub
   geprüft, noch nicht auf einem echten Windows-Rechner.
+- Fixes (beide Loops): keine liegengebliebenen Prompt-Temp-Dateien mehr bei
+  `--once`; verwaiste Locks werden auch bei wiederverwendeter PID (eigene
+  PID oder Lock älter als ein Lauf maximal dauert) erkannt; die
+  Abschlussmarke wird nur noch in stdout gesucht, stderr landet nur im Log;
+  keine Fehlermeldung der Log-Rotation beim ersten Lauf; unter Windows
+  bricht eine fehlgeschlagene Log-Rotation den Lauf nicht mehr ab.
+- SKILL.md: `mail-sort.log` wird nicht mehr vorab angelegt (der Loop legt
+  es mit restriktiven Rechten an).
 
 ## 1.1.0
 
