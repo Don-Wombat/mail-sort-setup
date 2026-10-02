@@ -21,7 +21,13 @@
   `.cmd`-Shim, Timeout/Tree-Kill, Registrierung in der Aufgabenplanung. Keine
   Skriptänderung nötig. Zusätzlich auf einer echten Windows-11-VM
   (deutsch, PS 5.1) mit dem echten `claude.exe` 2.1.286 und einem echten
-  Aufgabenplanung-Start geprüft (leere MCP-Konfiguration, kein Mail-Konto).
+  Aufgabenplanung-Start geprüft. Zusätzlich als Standardnutzer ohne
+  Adminrechte (winget-Installation von `claude` und `uv`, Aufgabenplanung,
+  `uvx mcp-email-server` per stdio) mit echtem Gmail-Testkonto bis zur
+  sortierten Mail durchgespielt.
+- SKILL.md (Windows): Hinweis `winget ... --skip-dependencies`, falls der
+  VC++-Redistributable-Installer Adminrechte verlangt; Hinweis auf den
+  langsamen ersten `uvx`-Start (Cache vorher füllen).
 
 ## 1.2.0
 

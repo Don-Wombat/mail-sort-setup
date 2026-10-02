@@ -363,13 +363,24 @@ im Projektverzeichnis aus Phase 1b ausführen.
 
 **Windows:** `uv` per `winget install --id astral-sh.uv -e` oder mit dem
 offiziellen Installer aus der uv-Dokumentation installieren (danach ein
-neues Terminal öffnen). `~` steht für `%USERPROFILE%`, die Config liegt also
+neues Terminal öffnen). Das geht ohne Adminrechte. Fragt `winget` dabei
+nach Administratorrechten oder bricht mit Exit-Code 1459 ab, liegt das an
+der Abhängigkeit „Visual C++ Redistributable“ (deren Installer will Admin):
+dann `winget install --id astral-sh.uv -e --skip-dependencies` verwenden
+(`uv` läuft auch ohne) oder den offiziellen Installer nehmen. `~` steht für `%USERPROFILE%`, die Config liegt also
 unter `%USERPROFILE%\.config\mcp-email-server\config.toml`. Ist Claude
 Code per npm installiert (`claude.cmd`/`claude.ps1`), kann PowerShell das
 `--` im `claude mcp add`-Befehl verschlucken — den Befehl dann über
 `cmd /c "claude mcp add mail -s local -- uvx mcp-email-server==<VERSION> stdio"`
 ausführen. Der automatische Lauf ist davon nicht betroffen (er liest
 `mail-mcp.json`).
+
+**Erster Start nach der Installation:** `uvx` lädt beim allerersten Aufruf
+Python und rund 60 Pakete herunter. Startet der Server dabei zu langsam,
+verbindet sich `claude` nicht und der Lauf endet ohne Abschlussmarke (der
+Watermark bleibt stehen, der nächste Lauf klappt dann). Deshalb den Server
+vor dem ersten automatischen Lauf einmal in der Verifizierung (nächster
+Abschnitt) im selben Benutzerkonto starten — das füllt den `uv`-Cache.
 
 ### Verifizieren und Zielordner prüfen
 
