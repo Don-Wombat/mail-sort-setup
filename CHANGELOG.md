@@ -11,6 +11,10 @@
 - SKILL.md: neuer Fallstrick und Hinweis im Testlauf (Phase 6).
 - Docker-Pfad gegen ein echtes Gmail-Konto neu validiert (Container-Snippet,
   HTTP-Transport, gehärteter Loop, Vollauf, Marke, Watermark).
+- Windows-Pfad auf einem echten Windows-Runner (GitHub Actions) geprüft:
+  Windows PowerShell 5.1 und PowerShell 7, kompilierter `claude.exe`-Stub,
+  `.cmd`-Shim, Timeout/Tree-Kill, Registrierung in der Aufgabenplanung. Keine
+  Skriptänderung nötig.
 
 ## 1.2.0
 
@@ -23,7 +27,7 @@
 - SKILL.md: Windows-Erkennung in Phase 0, Windows-Hinweise für Rechte
   (`icacls`), Passwort-Prüfung, uv-Installation, Zeitplan und Testlauf.
 - Hinweis: Der Windows-Pfad ist mit PowerShell 7 gegen einen Test-Stub
-  geprüft, noch nicht auf einem echten Windows-Rechner.
+  geprüft (siehe 1.2.1: inzwischen auch auf echtem Windows).
 - Fixes (beide Loops): keine liegengebliebenen Prompt-Temp-Dateien mehr bei
   `--once`; verwaiste Locks werden auch bei wiederverwendeter PID (eigene
   PID oder Lock älter als ein Lauf maximal dauert) erkannt; die
