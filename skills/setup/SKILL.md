@@ -179,6 +179,29 @@ Pro E-Mail-Konto:
 | Yahoo Mail | `imap.mail.yahoo.com` | 993 | ja |
 | iCloud Mail | `imap.mail.me.com` | 993 | ja |
 
+**Provider-Hinweise (Stand 2026-10, bitte dem Nutzer vor der Passwort-
+Eingabe nennen).** Durchgängig mit diesem Skill getestet ist bisher nur
+Gmail; die anderen Einträge beruhen auf Provider-Dokumentation.
+
+- **Gmail:** App-Passwort braucht aktivierte 2-Schritt-Verifizierung. Zeigt
+  die Seite "Die gesuchte Einstellung ist für Ihr Konto nicht verfügbar",
+  ist 2SV nicht (vollständig) aktiv, z. B. nur Passkey oder gerade erst
+  eingeschaltet. Ordnernamen sind kontosprachabhängig (deutsch:
+  `[Gmail]/Papierkorb`); Labels erscheinen als Ordner.
+- **GMX / Web.de:** IMAP ist für neue Konten oft ausgeschaltet. Im
+  Webmail unter Einstellungen → E-Mail → "POP3/IMAP Abruf" → "POP3 und
+  IMAP Zugriff erlauben" aktivieren. Mit 2FA wird zusätzlich ein
+  anwendungsspezifisches Passwort benötigt (GMX: Account verwalten →
+  Login & Sicherheit → Anwendungsspezifische Passwörter).
+- **Outlook.com / Hotmail / Microsoft 365: funktioniert mit diesem Skill
+  nicht.** Microsoft hat Basic Authentication (auch App-Passwörter) für
+  IMAP dauerhaft abgeschaltet (Exchange Online Ende 2022, persönliche
+  Konten 2024); nötig wäre OAuth 2.0, das `mcp-email-server` mit
+  Passwort-Konfiguration nicht bietet. Dem Nutzer das ehrlich sagen und
+  das Konto nicht einrichten, statt es zu versuchen.
+- **Yahoo / iCloud:** verlangen ein App-spezifisches Passwort (nicht das
+  Kontopasswort); nicht mit diesem Skill getestet.
+
 ### 1.2 Zielordner & Zuordnungsregeln
 
 Pro Konto: "In welche Unterordner soll einsortiert werden, und woran soll

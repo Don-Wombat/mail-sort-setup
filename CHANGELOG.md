@@ -28,6 +28,10 @@
 - SKILL.md (Windows): Hinweis `winget ... --skip-dependencies`, falls der
   VC++-Redistributable-Installer Adminrechte verlangt; Hinweis auf den
   langsamen ersten `uvx`-Start (Cache vorher füllen).
+- SKILL.md (Phase 1.1): Provider-Hinweise (Gmail-2SV-Stolperfalle, GMX/Web.de
+  IMAP-Freischaltung + App-Passwort, Outlook/Microsoft 365 wegen
+  abgeschalteter Basic Auth nicht unterstützt, Yahoo/iCloud App-Passwort);
+  nur Gmail ist per Skill getestet.
 
 ## 1.2.0
 
