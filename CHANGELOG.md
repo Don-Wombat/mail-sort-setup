@@ -32,6 +32,10 @@
   IMAP-Freischaltung + App-Passwort, Outlook/Microsoft 365 wegen
   abgeschalteter Basic Auth nicht unterstützt, Yahoo/iCloud App-Passwort);
   nur Gmail ist per Skill getestet.
+- README (DE/EN): neuer Abschnitt zu Firmenrechnern und geschäftlichem Claude
+  (IT-Freigabe, Datenschutz, Microsoft 365, AppLocker/WDAC, TLS-Inspection,
+  Ausführungsrichtlinie, verwaltete Claude-Code-Einstellungen); ausdrücklich
+  als ungetestet gekennzeichnet.
 
 ## 1.2.0
 
