@@ -43,4 +43,4 @@ Der Sortier-Algorithmus selbst läuft seit mehreren Wochen im täglichen
 Einsatz (GMX und Gmail). Der Setup-Skill wurde am 2026-09-28 gegen ein
 echtes Gmail-Konto validiert (Docker-Pfad); dieses Datum gilt nur für den
 Setup-Skill. Der lokale Pfad (ohne Docker) ist bisher nur nach
-Dokumentationslage gebaut, noch nicht real durchgespielt; der Windows-Pfad (ab 1.2.0) ist nur gegen einen Test-Stub geprüft. Seit Version 1.1.0 wurde der Loop überarbeitet; der Docker-Pfad muss erneut validiert werden.
+Dokumentationslage gebaut, noch nicht real durchgespielt; Der Docker-Pfad wurde nach der Überarbeitung des Loops (ab 1.1.0) am 2026-10-02 (Version 1.2.1) erneut mit echtem Gmail-Konto validiert. Der Windows-Pfad (ab 1.2.0) lief am selben Tag auf einem echten Windows-Runner und auf einer Windows-11-VM, dort auch als Standardnutzer ohne Adminrechte mit echtem Gmail-Lauf. Nicht getestet: Windows 10, englisches Windows, durch Firmenrichtlinien verwaltete Rechner, macOS, lokaler Linux-Pfad. Von den Mail-Anbietern ist nur Gmail durchgespielt; Outlook/Microsoft 365 funktioniert nicht (kein OAuth).
