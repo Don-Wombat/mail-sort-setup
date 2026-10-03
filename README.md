@@ -119,6 +119,10 @@ Das Diagnose-Skript erkennt beide Fälle. Von Hand lässt sich vorab prüfen mit
 
 **Faustregel:** Erst `/mail-sort-setup:setup` mit einem privaten Testkonto durchspielen, nicht mit dem Firmenpostfach. Läuft das, ist der Rest eine Frage der Freigabe durch die IT. Erfahrungen von Firmenrechnern gern als Issue melden.
 
+## Lizenz
+
+[MIT](LICENSE): Jeder darf den Skill frei nutzen, kopieren, ändern und weitergeben, privat wie geschäftlich, ohne Gegenleistung. Es gibt keine Gewährleistung; du setzt ihn auf eigene Verantwortung ein.
+
 ---
 
 # English
@@ -241,3 +245,7 @@ Admins can enforce Claude Code settings centrally, via files (`C:\Program Files\
 The diagnostic script detects both cases. By hand you can check up front with `claude mcp list` (shows only the permitted servers) and `/status` in Claude Code (shows which managed sources are active). Documentation: [Managed settings](https://code.claude.com/docs/en/managed-settings) and [Managed MCP](https://code.claude.com/docs/en/managed-mcp).
 
 **Rule of thumb:** first run `/mail-sort-setup:setup` with a private test account, not the company mailbox. If that works, the rest is a matter of approval by IT. Reports from company machines are welcome as issues.
+
+## License
+
+[MIT](LICENSE): anyone may use, copy, modify and redistribute this skill freely, privately or commercially, at no cost. There is no warranty; you use it at your own risk.
