@@ -1,5 +1,37 @@
 # Changelog
 
+## 1.2.2
+
+Ergebnis eines Code-Reviews.
+
+- SKILL.md/SECURITY.md: ehrlichere Darstellung der Schutzebenen. Nur das
+  Senden ist auch serverseitig unmöglich (kein SMTP); für `delete_emails`
+  und für `move_emails` in beliebige Ordner gibt es serverseitig keine
+  Sperre, dort greifen die Werkzeugliste des Loops und die Prompt-Regeln.
+  Aussagen wie „technisch gesperrt“ bzw. „nichts wird unwiderruflich
+  gelöscht“ entsprechend präzisiert.
+- SKILL.md (Docker-Pfad)/SECURITY.md: Der Mail-Server hat keine eigene
+  Anmeldung. Das Compose-Snippet nutzt jetzt ein eigenes Netz
+  (`mail-sort-net`) statt „gleiches Netz wie Claude Code“; Empfehlung, kein
+  Netz mit anderen Diensten oder Reverse Proxy zu teilen.
+- `diagnose-windows.ps1`: Die TLS-Prüfung fragt keine Sperrlisten mehr ab
+  (`RevocationMode = NoCheck`); sonst konnte hinter einer Firewall ohne
+  CRL-Zugriff ein falsches „nicht vertrauenswürdig“ erscheinen. Die
+  uvx-Aufrufe im Skript nutzen dieselbe Schreibweise wie die Vorlagen
+  (`uvx mcp-email-server==<VERSION> ...`).
+- README (DE/EN): Die Freigabe für `allowedMcpServers` ist der exakte
+  Befehl `uvx mcp-email-server==<VERSION> stdio`, nicht `@...`.
+- SKILL.md (Phase 0): Die Claude-Code-Versionsprüfung testet jeden der drei
+  Schalter (`dontAsk`, `--strict-mcp-config`, `--tools`) einzeln statt einer
+  Trefferzahl (bash und PowerShell).
+- Auf der Windows-11-VM (als Administrator; PS 5.1, claude 2.1.286, uv 0.12.22) nachgeprüft:
+  `diagnose-windows.ps1 -All` ohne Auffälligkeiten (16 OK, inkl. neuer
+  uvx-Schreibweise und gehärtetem `claude -p`); `allowedMcpServers` mit dem
+  exakten Befehl `uvx mcp-email-server==1.11.0 stdio` lädt den Server, mit
+  `@` statt `==` oder ohne `stdio` wird er blockiert.
+- SKILL.md: veralteter Windows-Fallstrick („nur mit PowerShell 7 gegen
+  Test-Stub geprüft“) durch den tatsächlichen Teststand ersetzt.
+
 ## 1.2.1
 
 - Fix (Gmail, per Live-Test gefunden): `move_emails` antwortet bei Gmail auch

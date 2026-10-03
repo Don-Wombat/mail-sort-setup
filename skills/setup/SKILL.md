@@ -27,14 +27,20 @@ eintragen".
 ## 0. Kernprinzip — nicht verhandelbar
 
 **Diese Automatisierung darf niemals senden, löschen oder weiterleiten.**
-Das wird auf zwei unabhängigen Ebenen erzwungen, nicht nur einer:
+Das wird auf zwei unabhängigen Ebenen erzwungen, nicht nur einer. Wichtig
+für die ehrliche Erklärung gegenüber dem Nutzer: Nur das **Senden** ist
+auch serverseitig unmöglich; **Löschen und Verschieben** sind es nicht —
+der MCP-Server kennt dafür keine Sperre, dort greift allein die
+Clientseite (Ebene 2) plus die Prompt-Regel „nur in die genannten
+Zielordner".
 
-1. **Serverseitig (stärker):** Der `[emails.outgoing]`-Block (SMTP) wird in
-   `config.toml` standardmäßig **weggelassen**, und `allowed_recipients = []`
-   steht als globaler Schlüssel ganz oben in der Datei. Ohne SMTP-
-   Zugangsdaten kann der MCP-Server `send_email`/`forward_email` technisch
-   gar nicht ausführen — das ist keine Höflichkeitsregel, sondern eine
-   strukturelle Unmöglichkeit.
+1. **Serverseitig (nur für Senden):** Der `[emails.outgoing]`-Block (SMTP)
+   wird in `config.toml` standardmäßig **weggelassen**, und
+   `allowed_recipients = []` steht als globaler Schlüssel ganz oben in der
+   Datei. Ohne SMTP-Zugangsdaten kann der MCP-Server
+   `send_email`/`forward_email` technisch gar nicht ausführen — das ist
+   keine Höflichkeitsregel, sondern eine strukturelle Unmöglichkeit. Für
+   `delete_emails` gibt es serverseitig **keine** entsprechende Sperre.
 2. **Clientseitig:** Der generierte Lauf-Loop startet `claude -p` bewusst
    eng gefasst: `--permission-mode dontAsk` (alles Nicht-Erlaubte wird
    abgelehnt statt nachgefragt), `--tools ""` (keine eingebauten Werkzeuge
@@ -58,9 +64,13 @@ Das wird auf zwei unabhängigen Ebenen erzwungen, nicht nur einer:
 so erklären, nicht nur "read-only" sagen): Mails werden **gelesen**
 (Absender, Betreff, Datum — nicht der Inhalt), zwischen **den eigenen
 Ordnern desselben Kontos verschoben** und mit Labels/Tags markiert. Nichts
-verlässt das Konto, nichts wird unwiderruflich gelöscht, nichts wird an
-Dritte verschickt. Verschobene Mails sind weiterhin da — nur in einem
-anderen Ordner, jederzeit manuell zurückverschiebbar.
+verlässt das Konto, der Lauf löscht nichts und verschickt nichts.
+Verschobene Mails sind weiterhin da — nur in einem anderen Ordner,
+jederzeit manuell zurückverschiebbar. (Technisch kann `move_emails` jeden
+Ordner des Kontos ansteuern, auch Papierkorb; dass der Lauf das nicht tut,
+sichern die Prompt-Regel und die eng gefasste Werkzeugliste, nicht der
+Server. Deshalb: Mail-Inhalte gelten im Prompt ausdrücklich als Daten, und
+der Mail-Server soll nur für den Sortier-Loop erreichbar sein.)
 
 **Falls der Nutzer ausdrücklich SMTP/Senden für andere Zwecke will:** dann
 nur mit einer **eigenen Config-Datei und einem eigenen MCP-Server unter
@@ -103,14 +113,18 @@ Frage nicht raten — prüfe zuerst technisch, frage nur wenn unklar:
 command -v tmux >/dev/null && echo "tmux verfügbar" || echo "kein tmux"
 uname -s   # Linux / Darwin (macOS) / ...
 claude --version
-claude --help | grep -E -c 'dontAsk|--strict-mcp-config|--tools'   # sollte mindestens 3 ausgeben
+for s in dontAsk --strict-mcp-config --tools; do
+  claude --help | grep -q -e "$s" && echo "OK:    $s" || echo "FEHLT: $s"
+done
 ```
 
 - **Claude-Code-Version:** Der Loop braucht `--permission-mode dontAsk`,
-  `--tools` und `--strict-mcp-config`. Zeigt `claude --help` sie nicht an
-  (bzw. liefert das `grep -c` weniger als 3), den Nutzer bitten, Claude Code
-  zu aktualisieren (`claude update`), bevor es weitergeht — sonst läuft die
-  Absicherung aus Abschnitt 0 nicht.
+  `--tools` und `--strict-mcp-config`. Meldet die Schleife oben für einen
+  der drei Schalter `FEHLT`, den Nutzer bitten, Claude Code zu
+  aktualisieren (`claude update`), bevor es weitergeht — sonst läuft die
+  Absicherung aus Abschnitt 0 nicht. (Jeden Schalter einzeln prüfen: eine
+  bloße Trefferzahl kann durch mehrere Zeilen desselben Schalters
+  täuschen.)
 - **Docker-Pfad**, wenn `/.dockerenv` existiert (oder der Nutzer bestätigt,
   dass Claude Code in einem Container läuft, der Sessions bei Absturz neu
   startet — frag nach, ob es sowas wie ein `entrypoint.sh` mit
@@ -126,7 +140,9 @@ claude --help | grep -E -c 'dontAsk|--strict-mcp-config|--tools'   # sollte mind
   $env:OS                      # Windows_NT
   $PSVersionTable.PSVersion    # 5.1 (vorinstalliert) oder 7.x
   claude --version
-  (claude --help | Select-String -Pattern 'dontAsk|--strict-mcp-config|--tools').Count   # mindestens 3
+  foreach ($s in 'dontAsk','--strict-mcp-config','--tools') {
+    if (claude --help | Select-String -SimpleMatch $s -Quiet) { "OK:    $s" } else { "FEHLT: $s" }
+  }
   ```
 
   Auf Windows gilt der lokale Pfad mit den Windows-Vorlagen
@@ -324,6 +340,13 @@ Einstellung `credential_storage = "plaintext"` nachlesen und setzen.
 ### Docker-Pfad
 
 Eigener Container neben dem bestehenden Claude-Code-Setup, HTTP-Transport.
+Der MCP-Server hat **keine eigene Authentifizierung**: Wer ihn im Netz
+erreicht, kann alle Werkzeuge nutzen, auch `delete_emails`. Deshalb ein
+**eigenes, nur für diesen Zweck angelegtes Docker-Netz** verwenden, in dem
+nur `mail-mcp-sort` und der Container hängen, aus dem der Loop läuft
+(`claude-code` o. ä.) — kein gemeinsames Netz mit anderen Diensten oder
+einem Reverse Proxy, und keinen published Port.
+
 Das Config-Verzeichnis (siehe oben) muss auf dem Docker-Host liegen und
 dort in den Container gemountet werden. Liegt es bereits in einem Ordner,
 den Claude Code im eigenen Container sieht (z. B. ein gemeinsames
@@ -345,8 +368,13 @@ mail-mcp-sort:
     - MCP_EMAIL_SERVER_CONFIG_PATH=/config/config.toml
   volumes:
     - <config-verzeichnis-auf-dem-host>:/config
-  networks: [<gleiches-netz-wie-claude-code>]
+  networks: [mail-sort-net]   # eigenes Netz, siehe oben; den Claude-Code-Container ebenfalls hinein
 ```
+
+`mail-sort-net` muss im Compose-Projekt als Netz definiert sein
+(`networks: { mail-sort-net: {} }`), und der Claude-Code-Container muss
+ebenfalls hineingehängt werden (ein zusätzliches Netz, seine bisherigen
+behält er).
 
 `MCP_EMAIL_SERVER_CONFIG_PATH` ist nötig: ohne diese Variable liest der
 Server `~/.config/mcp-email-server/config.toml` im Container und findet die
@@ -562,9 +590,11 @@ Aktivieren des automatischen Zeitplans:
    dann weg aus dem Posteingang).
 2. Ergebnis zusammen durchgehen: wie viele Mails erkannt, wie viele
    verschoben/markiert, wie viele blieben unangetastet.
-3. Dem Nutzer erklären, dass send/delete/forward-Aufrufe technisch
-   gesperrt sind (`--tools ""`, `--strict-mcp-config`, `--allowedTools`,
-   `--disallowedTools`, `--permission-mode dontAsk`). Das Log
+3. Dem Nutzer erklären, dass send/delete/forward-Aufrufe für den Lauf
+   clientseitig gesperrt sind (`--tools ""`, `--strict-mcp-config`,
+   `--allowedTools`, `--disallowedTools`, `--permission-mode dontAsk`);
+   Senden ist zusätzlich serverseitig unmöglich (kein SMTP), Löschen
+   dagegen nur clientseitig gesperrt (siehe Abschnitt 0). Das Log
    (`mail-sort.log`) enthält nur die Textausgabe des Laufs, keine Liste
    der Tool-Aufrufe — den Nachweis liefert also die Sperre selbst, nicht
    das Log. Meldet das Log am Ende die Abschlussmarke `MAIL_SORT_LAUF_OK`,
@@ -683,9 +713,10 @@ Kurze, für Laien verständliche Zusammenfassung, keine Wall of Text:
   entweder `MAIL_SORT_FIRST_RUN_SINCE` im Loop auf ein Datum setzen
   (z. B. nur das letzte Jahr) oder den Lauf mehrfach starten, bis er
   durchläuft. Dem Nutzer das vorher ankündigen.
-- **Windows: der Windows-Pfad ist bisher nur mit PowerShell 7 unter Linux
-  gegen einen Test-Stub geprüft**, noch nicht auf einem echten
-  Windows-Rechner. Bei Problemen zuerst manuell
+- **Windows:** Der Windows-Pfad ist auf echtem Windows geprüft (GitHub-
+  Actions-Runner mit PowerShell 5.1 und 7; Windows-11-VM mit echtem
+  `claude.exe` und Aufgabenplanung), aber noch nicht auf Windows 10,
+  englischem Windows oder einem Firmenrechner. Bei Problemen zuerst manuell
   `mail-sort-loop.ps1 -Once` im Terminal laufen lassen und die Ausgabe
   ansehen. Das Zeitlimit beendet auch hängende Kindprozesse (u. a. als
   Schutz vor hängenden headless-`claude.exe`-Prozessen, wie sie in
