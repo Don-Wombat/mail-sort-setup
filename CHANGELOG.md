@@ -1,5 +1,13 @@
 # Changelog
 
+## Unveröffentlicht
+
+- Loop-Vorlagen (`mail-sort-loop.sh`, `mail-sort-loop.ps1`): Folgeläufe
+  prüfen `since` = Watermark minus 7 Tage (`MAIL_SORT_LOOKBACK_DAYS` bzw.
+  `$MailSortLookbackDays`, `0` = aus). Mails, die ein früherer Lauf liegen
+  ließ (Provider-Fehler, unklare Regel), werden so erneut geprüft. Der
+  Watermark selbst bleibt unverändert. Hinweis in SKILL.md ergänzt.
+
 ## 1.2.2
 
 Ergebnis eines Code-Reviews.

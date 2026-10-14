@@ -36,6 +36,10 @@ $MailSortFirstRunSince = ''          # Optional, ISO-Zeitstempel (z.B. 2026-01-0
 $MailSortRunTimeoutSeconds = 1800    # Abbruch eines haengenden Laufs (inkl. Kindprozesse).
 $MailSortLogMaxBytes = 5242880       # Log-Rotation (eine Generation: mail-sort.log.1).
 $MailSortStateMarginSeconds = 300    # Sicherheitsmarge beim Watermark.
+# Ueberlappung: jeder Lauf prueft since = Watermark minus diese Tage. So bekommen
+# Mails eine zweite Chance, die ein frueherer Lauf (Provider-Fehler, unklare
+# Regel, spaeter ergaenzte Regel) liegen liess. 0 = nur seit dem letzten Lauf.
+$MailSortLookbackDays = 7
 # Wer einen Retry-Wrapper nutzt, setzt MAIL_SORT_CLAUDE_BIN. Er muss die
 # claude-Argumente 1:1 durchreichen, stdin weiterleiten und den Exit-Code erhalten.
 $ClaudeBin = if ($env:MAIL_SORT_CLAUDE_BIN) { $env:MAIL_SORT_CLAUDE_BIN } else { 'claude' }
@@ -217,6 +221,10 @@ function Invoke-SortRun([bool]$full) {
     $watermark = ([System.IO.File]::ReadAllText($MailSortStateFile)).Trim()
     if ($watermark -match '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:]{8}Z$') {
       $since = $watermark
+      if ($MailSortLookbackDays -gt 0) {
+        $wm = [datetime]::ParseExact($watermark, "yyyy-MM-dd'T'HH:mm:ss'Z'", $Inv, [System.Globalization.DateTimeStyles]::AssumeUniversal -bor [System.Globalization.DateTimeStyles]::AdjustToUniversal)
+        $since = Get-UtcStamp ($wm.AddDays(-$MailSortLookbackDays))
+      }
     } elseif ($watermark) {
       Write-Log "[mail-sort] WARNUNG: Watermark-Datei hat ungueltigen Inhalt, behandle den Lauf als Erstlauf."
     }

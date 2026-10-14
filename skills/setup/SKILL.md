@@ -648,8 +648,8 @@ auf Wunsch des Nutzers per `move_emails` zurück ins Postfach/in den
 korrekten Ordner verschieben, und **Schritt 1 dieser Phase mit den
 korrigierten Regeln wiederholen** — mit `bash mail-sort-loop.sh --once
 --full` (Windows: `... mail-sort-loop.ps1 -Once -Full`). Ein normaler `--once`-Lauf würde wegen des Watermarks nur Mails
-seit dem letzten Lauf ansehen und die zuvor unsortierten Mails gar nicht
-mehr betrachten; `--full` ignoriert den Watermark und prüft den ganzen
+der letzten Tage (Watermark minus 7 Tage Überlappung) ansehen und ältere,
+zuvor unsortierte Mails gar nicht mehr betrachten; `--full` ignoriert den Watermark und prüft den ganzen
 Posteingang erneut. Wiederholen, bis der Nutzer zufrieden ist. Erst danach
 zu Phase 7.
 
@@ -713,6 +713,13 @@ Kurze, für Laien verständliche Zusammenfassung, keine Wall of Text:
   entweder `MAIL_SORT_FIRST_RUN_SINCE` im Loop auf ein Datum setzen
   (z. B. nur das letzte Jahr) oder den Lauf mehrfach starten, bis er
   durchläuft. Dem Nutzer das vorher ankündigen.
+- **Überlappung (7 Tage):** Folgeläufe prüfen nicht nur seit dem Watermark,
+  sondern `MAIL_SORT_LOOKBACK_DAYS` (Windows: `$MailSortLookbackDays`,
+  Standard 7) Tage davor. Was ein früherer Lauf liegen ließ (Provider-
+  Fehler, unklare Regel, später ergänzte Regel), bekommt so automatisch eine
+  zweite Chance; bereits sortierte Mails sind nicht mehr im Posteingang, die
+  Mehrkosten sind gering. `0` stellt das Verhalten „nur seit dem letzten
+  Lauf“ wieder her. Ältere Mails erfasst weiterhin nur `--full`.
 - **Windows:** Der Windows-Pfad ist auf echtem Windows geprüft (GitHub-
   Actions-Runner mit PowerShell 5.1 und 7; Windows-11-VM mit echtem
   `claude.exe` und Aufgabenplanung), aber noch nicht auf Windows 10,

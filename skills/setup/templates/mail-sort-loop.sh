@@ -35,6 +35,11 @@ MAIL_SORT_FIRST_RUN_SINCE=""       # Optional, ISO-Zeitstempel mit Offset (z.B. 
 MAIL_SORT_RUN_TIMEOUT_SECONDS=1800 # Abbruch eines haengenden Laufs.
 MAIL_SORT_LOG_MAX_BYTES=5242880    # Log-Rotation (eine Generation: mail-sort.log.1).
 MAIL_SORT_STATE_MARGIN_SECONDS=300 # Sicherheitsmarge beim Watermark (Uhrabweichung Container <-> IMAP-Server).
+# Ueberlappung: jeder Lauf prueft since = Watermark minus diese Tage. So bekommen
+# Mails eine zweite Chance, die ein frueherer Lauf (Provider-Fehler, unklare
+# Regel, spaeter ergaenzte Regel) liegen liess. Sortierte Mails sind nicht mehr
+# in der INBOX, die Mehrkosten sind gering. 0 = nur seit dem letzten Lauf.
+MAIL_SORT_LOOKBACK_DAYS=7
 # Wer einen Retry-Wrapper nutzt, traegt ihn hier ein. Er muss die
 # claude-Argumente 1:1 durchreichen, stdin weiterleiten und den Exit-Code
 # erhalten.
@@ -130,6 +135,14 @@ elif command -v gtimeout >/dev/null 2>&1; then
   TIMEOUT_CMD=(gtimeout --kill-after=60 "$MAIL_SORT_RUN_TIMEOUT_SECONDS")
 fi
 
+# UTC-ISO minus N Tage (GNU date, sonst BSD/macOS date). Bei Fehler: Eingabe unveraendert.
+minus_days() {
+  local ts="$1" days="$2" ep
+  ep="$(date -u -d "$ts" +%s 2>/dev/null || date -u -j -f '%Y-%m-%dT%H:%M:%SZ' "$ts" +%s 2>/dev/null)" || ep=""
+  if [ -z "$ep" ]; then printf '%s' "$ts"; return; fi
+  fmt_epoch $((ep - days * 86400))
+}
+
 # Gueltiger Watermark auf stdout, sonst nichts (ungueltig: Warnung auf stderr).
 read_watermark() {
   local w
@@ -174,6 +187,9 @@ run_once() {
   run_start="$(fmt_epoch "$start_epoch")"
   if [ "$full" -eq 0 ]; then
     since="$(read_watermark)"
+    if [ -n "$since" ] && [ "${MAIL_SORT_LOOKBACK_DAYS:-0}" -gt 0 ]; then
+      since="$(minus_days "$since" "$MAIL_SORT_LOOKBACK_DAYS")"
+    fi
     if [ -z "$since" ] && [ ! -s "$MAIL_SORT_STATE_FILE" ]; then first_since="$MAIL_SORT_FIRST_RUN_SINCE"; fi
   fi
   if [ -n "$since" ]; then mode="since $since"; else mode="Erstlauf/Vollauf"; fi
